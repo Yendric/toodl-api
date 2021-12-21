@@ -15,17 +15,14 @@
   "author": "Yendric Van Roey",
   "license": "MIT",
   "dependencies": {
-    "@types/body-parser": "^1.19.2",
     "bcryptjs": "^2.4.3",
     "colors": "^1.4.0",
-    "connect-session-sequelize": "^7.1.1",
     "cors": "^2.8.5",
     "dayjs": "^1.10.7",
     "dotenv": "^10.0.0",
     "express": "^4.17.2",
     "express-session": "^1.17.1",
     "google-auth-library": "^7.6.2",
-    "memorystore": "^1.6.6",
     "node-cron": "^3.0.0",
     "nodemailer": "^6.4.11",
     "reflect-metadata": "^0.1.13",
@@ -34,7 +31,6 @@
     "socket.io": "^4.4.0",
     "sqlite3": "npm:@vscode/sqlite3@^5.0.7",
     "ts-node": "^10.4.0",
-    "ts-node-dev": "^1.1.8",
     "typescript": "^4.5.4"
   },
   "devDependencies": {
@@ -52,6 +48,7 @@
     "eslint": "^7.32.0",
     "jest": "^27.4.5",
     "supertest": "^6.1.6",
-    "ts-jest": "^27.1.2"
+    "ts-jest": "^27.1.2",
+    "ts-node-dev": "^1.1.8"
   }
 }
