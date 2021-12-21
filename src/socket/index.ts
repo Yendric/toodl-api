@@ -1,5 +1,6 @@
 import isLoggedIn from '../middleware/auth';
-import { server, sessionMiddleware } from '..';
+import { sessionMiddleware } from '..';
+import server from '../server';
 import User from '../models/User';
 import Todo from '../models/Todo';
 import { Server } from 'socket.io';
@@ -15,8 +16,11 @@ const io = new Server(server, {
         credentials: true,
     },
 });
-io.use((socket, next) => sessionMiddleware(socket.request as Request, {} as Response, next as NextFunction));
-io.use((socket, next) => isLoggedIn(socket.request, {}, next));
+io.use((socket, next) => {
+    sessionMiddleware(socket.request as Request, {} as Response, next as NextFunction);
+    isLoggedIn(socket.request, {}, next);
+});
+
 
 /*
 / Behandel connecties met de socket.io server
