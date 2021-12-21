@@ -1,6 +1,6 @@
 # Toodl API
 ![Known Vulnerabilities](https://snyk.io/test/github/Yendric/toodl-api/badge.svg)
-![Issues](https://img.shields.io/bitbucket/issues/Yendric/toodl-api)
+![Issues](https://img.shields.io/github/issues/Yendric/toodl-api)
 
 Officiële Toodl-API repository. https://toodl.yendric.be
 
