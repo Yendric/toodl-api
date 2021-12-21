@@ -17,7 +17,7 @@ export async function login(req:Request, res:Response) {
         req.session.loggedIn = true;
         req.session.userId = user.id;
 
-        return res.status(201).json({ message: 'Succesvol ingelogd.' });
+        return res.status(200).json({ message: 'Succesvol ingelogd.' });
     }
     return res.status(400).json({ message: 'Incorrecte gegevens.' });
 }
@@ -50,7 +50,7 @@ export async function logout(req:Request, res:Response) {
             error('Fout bij uitloggen: ' + err);
             return res.status(500).json({ message: 'Er ging iets fout bij het uitloggen.' });
         }
-        return res.status(201).json({ message: 'Succesvol uitgelogd.' });
+        return res.status(200).json({ message: 'Succesvol uitgelogd.' });
     });
 }
 

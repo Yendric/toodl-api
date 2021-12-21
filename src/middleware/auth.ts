@@ -13,7 +13,8 @@ const isLoggedIn = async (req:Request|IncomingMessage, res:Response|Record<strin
         req.session.user = user;
         return next();
     }
-    return res.status(401).json({ message: 'Gelieve u eerst in te loggen.' });
+    if(res.status) res.status(401).json({ message: 'Gelieve u eerst in te loggen.' });
+    return;
 };
 
 export default isLoggedIn;
