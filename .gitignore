@@ -14,7 +14,7 @@ results
 tmp
 
 # Build
-public/css/main.css
+dist/**/*
 
 # Coverage reports
 coverage
@@ -35,8 +35,5 @@ bower_components
 .DS_Store
 Thumbs.db
 
-# Ignore built ts files
-dist/**/*
-
-#Database
+# Database
 database.sqlite

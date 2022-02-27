@@ -1,10 +1,9 @@
 ---
 name: Feature request
 about: Stel een idee voor dit project voor
-title: ''
-labels: ''
-assignees: ''
-
+title: ""
+labels: ""
+assignees: ""
 ---
 
 **Heeft uw verzoek betrekking op een probleem?**
