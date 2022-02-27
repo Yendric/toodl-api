@@ -17,7 +17,8 @@ export async function update(req: Request, res: Response) {
     return res.status(404).json({ message: "Gebruiker niet gevonden." });
 
   const { email, username } = req.body;
-  if (!(email && username))
+
+  if (!email || !username)
     return res.status(400).json({ message: "Geef alle gegevens mee." });
 
   if (!isEmail(email))
@@ -42,7 +43,7 @@ export async function updatePassword(req: Request, res: Response) {
     return res.status(404).json({ message: "Gebruiker niet gevonden." });
 
   const { oldPassword, newPassword, confirmPassword } = req.body;
-  if (!(oldPassword && newPassword && confirmPassword))
+  if (!oldPassword || !newPassword || !confirmPassword)
     return res.status(400).json({ message: "Geef alle gegevens mee." });
 
   if (

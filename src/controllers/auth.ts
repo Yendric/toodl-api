@@ -10,7 +10,7 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 export async function login(req: Request, res: Response) {
   const { email, password } = req.body;
 
-  if (!(email && password))
+  if (!email || !password)
     return res.status(400).json({ message: "Email, wachtwoord vereist." });
 
   const user = await getUserByEmail(email);
@@ -26,7 +26,7 @@ export async function login(req: Request, res: Response) {
 export async function register(req: Request, res: Response) {
   const { username, email, password } = req.body;
 
-  if (!(email && password && username))
+  if (!email || !password || !username)
     return res
       .status(400)
       .json({ message: "Email, naam én wachtwoord vereist." });
@@ -69,7 +69,7 @@ export async function google(req: Request, res: Response) {
     audience: process.env.GOOGLE_CLIENT_ID,
   });
   const payload = ticket.getPayload();
-  if (!(payload?.email && payload.name))
+  if (!payload?.email || !payload.name)
     return res.status(500).json({ message: "Er is iets foutgegaan." });
 
   let user = await getUserByEmail(payload.email);
