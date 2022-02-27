@@ -9,6 +9,7 @@ export async function info(req: Request, res: Response) {
   res.status(200).json({
     email: req.session.user.email,
     username: req.session.user.username,
+    onlyLinked: !req.session.user.password,
   });
 }
 
@@ -24,7 +25,7 @@ export async function update(req: Request, res: Response) {
   if (!isEmail(email))
     return res
       .status(400)
-      .json({ message: "Geef een geldig-email adres mee." });
+      .json({ message: "Geef een geldig e-mail adres mee." });
   if (username.length < 2 || username.length > 30)
     return res
       .status(400)

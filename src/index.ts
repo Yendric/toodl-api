@@ -5,6 +5,7 @@ import auth from "./routes/auth";
 import { config } from "dotenv";
 
 config();
+const API_VERSION = "v1";
 
 const app = express();
 
@@ -19,9 +20,9 @@ const sessionMiddleware = session({
 app.use(cors({ origin: process.env.APP_URI, credentials: true }));
 app.use(express.json());
 app.use(sessionMiddleware);
-app.use("/v1/auth", auth);
+app.use(`/${API_VERSION}/auth`, auth);
 
 import "./models/database";
 import "./cronjobs";
 
-export { sessionMiddleware, app };
+export { sessionMiddleware, app, API_VERSION };
