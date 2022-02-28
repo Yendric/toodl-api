@@ -30,6 +30,21 @@ export default class User extends Model {
   @Column
   public username!: string;
 
+  @Column
+  public dailyNotification!: boolean;
+
+  @Column
+  public reminderNotification!: boolean;
+
+  @Column
+  public nowNotification!: boolean;
+
+  @Column
+  public smartschoolCourseExport!: string;
+
+  @Column
+  public smartschoolTaskExport!: string;
+
   @HasMany(() => Todo)
   public todos!: Todo[];
 }
