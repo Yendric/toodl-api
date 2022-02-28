@@ -10,7 +10,8 @@
     "build": "tsc -p .",
     "serve": "node dist/server.js",
     "dev": "set DEBUG=true && ts-node-dev --respawn --transpile-only ./src/server.ts",
-    "test": "jest --forceExit --coverage --verbose"
+    "test": "jest --forceExit --coverage --verbose",
+    "migrate": "tsc src/database/migrations/* --outdir dist/migrations && npx sequelize-cli db:migrate --url 'sqlite:./database.sqlite' --migrations-path dist/migrations"
   },
   "author": "Yendric Van Roey",
   "license": "MIT",

@@ -9,7 +9,5 @@ export default server;
 import "./socket";
 
 server.listen(port, () => {
-  announce(
-    `App is online op poort ${port}. Bezoek ${process.env.CALLBACK_URI} in je browser.`
-  );
+  announce(`App is online op poort ${port}. Bezoek ${process.env.CALLBACK_URI} in je browser.`);
 });

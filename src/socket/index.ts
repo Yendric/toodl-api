@@ -17,11 +17,7 @@ const io = new Server(server, {
   },
 });
 io.use((socket, next) => {
-  sessionMiddleware(
-    socket.request as Request,
-    {} as Response,
-    next as NextFunction
-  );
+  sessionMiddleware(socket.request as Request, {} as Response, next as NextFunction);
   isLoggedIn(socket.request, {}, next);
 });
 

@@ -10,8 +10,7 @@ const API_VERSION = "v1";
 const app = express();
 
 const sessionMiddleware = session({
-  secret:
-    process.env.SECRET ?? "CHANGE-ME-IN-DOTENV-Q#%$GR$A&EHL*H@UA#RXQPSWHCDUN",
+  secret: process.env.SECRET ?? "CHANGE-ME-IN-DOTENV-Q#%$GR$A&EHL*H@UA#RXQPSWHCDUN",
   saveUninitialized: false,
   resave: false,
   cookie: { maxAge: 2592000000 },

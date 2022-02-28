@@ -1,9 +1,7 @@
 import colors from "colors";
 
 export function log(message: string) {
-  console.info(
-    colors.dim(`[${new Date().toLocaleTimeString()}] `) + colors.white(message)
-  );
+  console.info(colors.dim(`[${new Date().toLocaleTimeString()}] `) + colors.white(message));
 }
 
 export function announce(message: string) {

@@ -13,13 +13,11 @@ const isLoggedIn = async (
 ) => {
   if (req.session?.loggedIn && req.session.userId) {
     const user = await getUserById(req.session.userId);
-    if (!user)
-      return res.status(409).json({ message: "Gebruiker is verwijderd." });
+    if (!user) return res.status(409).json({ message: "Gebruiker is verwijderd." });
     req.session.user = user;
     return next();
   }
-  if (res.status)
-    res.status(401).json({ message: "Gelieve u eerst in te loggen." });
+  if (res.status) res.status(401).json({ message: "Gelieve u eerst in te loggen." });
   return;
 };
 

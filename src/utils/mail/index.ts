@@ -4,13 +4,7 @@ import fs from "fs";
 import Todo from "../../models/Todo";
 import { success, error } from "../logging";
 
-export default function (
-  todos: Todo[],
-  email: string,
-  voornaam: string,
-  onderwerp: string,
-  tekst: string
-) {
+export default function (todos: Todo[], email: string, voornaam: string, onderwerp: string, tekst: string) {
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
