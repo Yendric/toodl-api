@@ -16,3 +16,16 @@ export interface IncomingMessage extends http.IncomingMessage {
     userId?: number;
   };
 }
+
+export interface emitFn {
+  (event: string, data: any): void;
+}
+
+export interface callBackFn {
+  (args: any, user: User, emit: emitFn): Promise<any>;
+}
+
+export interface Route {
+  uri: string;
+  callback: callBackFn;
+}
