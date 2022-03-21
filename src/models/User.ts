@@ -8,7 +8,10 @@ import {
   AllowNull,
   AutoIncrement,
   HasMany,
+  Default,
+  AfterCreate,
 } from "sequelize-typescript";
+import List from "./List";
 import Todo from "./Todo";
 
 @Table
@@ -30,12 +33,15 @@ export default class User extends Model {
   @Column
   public username!: string;
 
+  @Default(true)
   @Column
   public dailyNotification!: boolean;
 
+  @Default(true)
   @Column
   public reminderNotification!: boolean;
 
+  @Default(true)
   @Column
   public nowNotification!: boolean;
 
@@ -47,4 +53,12 @@ export default class User extends Model {
 
   @HasMany(() => Todo)
   public todos!: Todo[];
+
+  @HasMany(() => List)
+  public lists!: List[];
+
+  @AfterCreate
+  static createFirstList(instance: User) {
+    List.create({ userId: instance.id, name: "Standaard", color: "#33AAFF" });
+  }
 }

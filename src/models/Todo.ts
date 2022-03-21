@@ -7,7 +7,9 @@ import {
   AllowNull,
   ForeignKey,
   BelongsTo,
+  Default,
 } from "sequelize-typescript";
+import List from "./List";
 import User from "./User";
 
 @Table
@@ -55,8 +57,16 @@ export default class Todo extends Model {
   public recurrenceException!: string;
 
   @AllowNull
+  @Default(false)
   @Column
   public done!: boolean;
+
+  @ForeignKey(() => List)
+  @Column
+  public listId!: number;
+
+  @BelongsTo(() => List)
+  public list!: List;
 
   @ForeignKey(() => User)
   @Column

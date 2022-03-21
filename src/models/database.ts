@@ -1,5 +1,6 @@
 import { Sequelize } from "sequelize-typescript";
 import { log } from "../utils/logging";
+import List from "./List";
 import Todo from "./Todo";
 import User from "./User";
 
@@ -10,5 +11,5 @@ const sequelize = new Sequelize("database", "user", "password", {
   storage: "database.sqlite",
 });
 
-sequelize.addModels([Todo, User]);
+sequelize.addModels([Todo, User, List]);
 sequelize.sync();
