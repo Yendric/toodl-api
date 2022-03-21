@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
-import { isEmail } from "../utils/string";
 import bcrypt from "bcryptjs";
+import { body, matchedData } from "express-validator";
+import validate from "../middleware/validation";
 
 export async function info(req: Request, res: Response) {
   if (!req.session.user) return res.status(404).json({ message: "Gebruiker niet gevonden." });
@@ -17,65 +18,49 @@ export async function info(req: Request, res: Response) {
   });
 }
 
-export async function update(req: Request, res: Response) {
-  if (!req.session.user) return res.status(404).json({ message: "Gebruiker niet gevonden." });
+export const update = [
+  body("email").isEmail().normalizeEmail(),
+  body("username").isString().isLength({ min: 1, max: 30 }),
+  body(["smartschoolCourseExport", "smartschoolTaskExport"])
+    .optional({ nullable: true })
+    .isURL()
+    .isLength({ min: 80, max: 90 })
+    .contains("smartschool.be"),
+  body(["dailyNotification", "reminderNotification", "nowNotification"]).isBoolean(),
+  validate,
+  async function (req: Request, res: Response) {
+    if (!req.session.user) return res.status(404).json({ message: "Gebruiker niet gevonden." });
 
-  const { email, username, smartschoolCourseExport, smartschoolTaskExport } = req.body;
+    await req.session.user.update(matchedData(req));
 
-  if (!email && !username && !smartschoolCourseExport && !smartschoolTaskExport)
-    return res.status(400).json({ message: "Geef iets mee om aan te passen." });
+    return res.status(200).json({ message: "Gebruiker succesvol geüpdatet." });
+  },
+];
 
-  if (!isEmail(email)) return res.status(400).json({ message: "Geef een geldig e-mail adres mee." });
-  if (username.length < 2 || username.length > 30)
-    return res.status(400).json({ message: "Geef een geldige gebruikersnaam mee." });
-  if (
-    !(
-      smartschoolCourseExport.length > 80 &&
-      smartschoolCourseExport.length < 90 &&
-      smartschoolCourseExport.includes("smartschool.be")
-    )
-  )
-    return res.status(400).json({ message: "Geef een geldige smartschool lesonderwerpenlink mee." });
-  if (
-    !(
-      smartschoolTaskExport.length > 80 &&
-      smartschoolTaskExport.length < 90 &&
-      smartschoolTaskExport.includes("smartschool.be")
-    )
-  )
-    return res.status(400).json({ message: "Geef een geldige smartschool takenlink mee." });
+export const updatePassword = [
+  body(["newPassword", "confirmPassword"]).isLength({ min: 8, max: 50 }),
+  body("oldPassword").optional().isLength({ min: 8, max: 50 }),
+  validate,
+  async function (req: Request, res: Response) {
+    if (!req.session.user) return res.status(404).json({ message: "Gebruiker niet gevonden." });
 
-  await req.session.user.update({
-    email: email ?? req.session.user.email,
-    username: username ?? req.session.user.username,
-    smartschoolCourseExport: smartschoolCourseExport ?? req.session.user.smartschoolCourseExport,
-    smartschoolTaskExport: smartschoolTaskExport ?? req.session.user.smartschoolTaskExport,
-  });
+    const { oldPassword, newPassword, confirmPassword } = req.body;
 
-  return res.status(204).json({ message: "Gebruiker succesvol geüpdated." });
-}
+    if (!req.session.user.password) {
+      if (!newPassword || !confirmPassword) return res.status(400).json({ message: "Geef alle gegevens mee." });
+      if (newPassword != confirmPassword) return res.status(400).json({ message: "Wachtwoorden komen niet overeen" });
 
-export async function updatePassword(req: Request, res: Response) {
-  if (!req.session.user) return res.status(404).json({ message: "Gebruiker niet gevonden." });
+      req.session.user.password = await bcrypt.hash(newPassword, 10);
+      req.session.user.save();
+      return res.status(200).json({ message: "Gebruiker succesvol geüpdatet." });
+    } else {
+      if (newPassword != confirmPassword) return res.status(400).json({ message: "Wachtwoordbevestiging incorrect." });
+      if (!(await bcrypt.compare(oldPassword, req.session.user.password)) || newPassword != confirmPassword)
+        return res.status(400).json({ message: "Geef je juiste wachtwoord mee." });
 
-  const { oldPassword, newPassword, confirmPassword } = req.body;
-
-  if (!req.session.user.password) {
-    if (!newPassword || !confirmPassword) return res.status(400).json({ message: "Geef alle gegevens mee." });
-    if (newPassword != confirmPassword) return res.status(400).json({ message: "Wachtwoorden komen niet overeen" });
-
-    req.session.user.password = await bcrypt.hash(newPassword, 10);
-    req.session.user.save();
-    return res.status(204).json({ message: "Gebruiker succesvol geüpdated." });
-  } else {
-    if (!oldPassword || !newPassword || !confirmPassword)
-      return res.status(400).json({ message: "Geef alle gegevens mee." });
-
-    if (!(await bcrypt.compare(oldPassword, req.session.user.password)) || newPassword != confirmPassword)
-      return res.status(400).json({ message: "Geef je juiste wachtwoord mee." });
-
-    req.session.user.password = await bcrypt.hash(newPassword, 10);
-    req.session.user.save();
-    return res.status(204).json({ message: "Gebruiker succesvol geüpdated." });
-  }
-}
+      req.session.user.password = await bcrypt.hash(newPassword, 10);
+      req.session.user.save();
+      return res.status(200).json({ message: "Gebruiker succesvol geüpdatet." });
+    }
+  },
+];

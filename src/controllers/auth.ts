@@ -4,45 +4,55 @@ import Users from "../models/User";
 import { OAuth2Client } from "google-auth-library";
 import { Request, Response } from "express";
 import { error } from "../utils/logging";
+import { body } from "express-validator";
+import validate from "../middleware/validation";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-export async function login(req: Request, res: Response) {
-  const { email, password } = req.body;
+export const login = [
+  body("email").isEmail(),
+  body("password").isLength({ min: 8, max: 50 }),
+  validate,
+  async function (req: Request, res: Response) {
+    const { email, password } = req.body;
 
-  if (!email || !password) return res.status(400).json({ message: "Email, wachtwoord vereist." });
+    const user = await getUserByEmail(email);
 
-  const user = await getUserByEmail(email);
-  if (user && (await bcrypt.compare(password, user.password))) {
+    if (user?.password && (await bcrypt.compare(password, user.password))) {
+      req.session.loggedIn = true;
+      req.session.userId = user.id;
+
+      return res.status(200).json({ message: "Succesvol ingelogd." });
+    }
+    return res.status(400).json({ message: "Incorrecte gegevens." });
+  },
+];
+
+export const register = [
+  body("email").isEmail(),
+  body("password").isLength({ min: 8, max: 150 }),
+  body("username").isLength({ min: 1, max: 30 }),
+  validate,
+  async function (req: Request, res: Response) {
+    const { username, email, password } = req.body;
+
+    const oldUser = await getUserByEmail(email);
+    if (oldUser) return res.status(409).json({ message: "E-mail is reeds geregistreerd." });
+
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const user = await Users.create({
+      username,
+      email: email.toLowerCase(),
+      password: passwordHash,
+    });
+
     req.session.loggedIn = true;
     req.session.userId = user.id;
 
-    return res.status(200).json({ message: "Succesvol ingelogd." });
-  }
-  return res.status(400).json({ message: "Incorrecte gegevens." });
-}
-
-export async function register(req: Request, res: Response) {
-  const { username, email, password } = req.body;
-
-  if (!email || !password || !username) return res.status(400).json({ message: "Email, naam én wachtwoord vereist." });
-
-  const oldUser = await getUserByEmail(email);
-  if (oldUser) return res.status(409).json({ message: "Email is reeds geregistreerd." });
-
-  const passwordHash = await bcrypt.hash(password, 10);
-
-  const user = await Users.create({
-    username,
-    email: email.toLowerCase(),
-    password: passwordHash,
-  });
-
-  req.session.loggedIn = true;
-  req.session.userId = user.id;
-
-  return res.status(201).json({ message: "Succesvol geregistreerd." });
-}
+    return res.status(201).json({ message: "Succesvol geregistreerd." });
+  },
+];
 
 export async function logout(req: Request, res: Response) {
   return req.session.destroy((err) => {
