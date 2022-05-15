@@ -8,7 +8,9 @@ import {
   ForeignKey,
   BelongsTo,
   Default,
+  BeforeCreate,
 } from "sequelize-typescript";
+import { DatabaseLimitError } from "../errors/DatabaseLimitError";
 import List from "./List";
 import User from "./User";
 
@@ -76,4 +78,12 @@ export default class Todo extends Model {
     onDelete: "CASCADE",
   })
   public user!: User;
+
+  @BeforeCreate
+  static async limitTodosPerList(instance: Todo) {
+    const amount = await Todo.count({ where: { listId: instance.listId } });
+    if (amount >= 100) {
+      throw new DatabaseLimitError("Je kan maximaal 100 todos per lijst hebben.");
+    }
+  }
 }

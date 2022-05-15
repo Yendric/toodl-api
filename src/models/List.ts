@@ -8,7 +8,11 @@ import {
   BelongsTo,
   Default,
   HasMany,
+  BeforeCreate,
+  BeforeDestroy,
+  BeforeBulkDestroy,
 } from "sequelize-typescript";
+import { DatabaseLimitError } from "../errors/DatabaseLimitError";
 import Todo from "./Todo";
 import User from "./User";
 
@@ -37,4 +41,25 @@ export default class List extends Model {
     onDelete: "CASCADE",
   })
   public user!: User;
+
+  @BeforeCreate
+  static async LimitListsPerUser(instance: List) {
+    const amount = await List.count({ where: { userId: instance.userId } });
+    if (amount >= 10) {
+      throw new DatabaseLimitError("Je mag maximaal 10 lijsten hebben.");
+    }
+  }
+
+  @BeforeDestroy
+  static async KeepOneList(instance: List) {
+    const amount = await List.count({ where: { userId: instance.userId } });
+    if (amount <= 1) {
+      throw new DatabaseLimitError("Je moet minimaal 1 lijst hebben.");
+    }
+  }
+
+  @BeforeBulkDestroy
+  static enableIndividualHooks(options: any) {
+    options.individualHooks = true;
+  }
 }

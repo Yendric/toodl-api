@@ -1,3 +1,4 @@
+import { ToodlError } from "../errors/ToodlError";
 import User from "../models/User";
 import { callBackFn, emitFn, Route } from "../types";
 import { broadcastLists, broadcastTodos } from "./services/broadcastingService";
@@ -15,7 +16,12 @@ export default class Router {
 
     if (!route) return "404";
 
-    route.callback.call(this, args[0], user, emit).then((res: any) => callbackFn(res));
+    route.callback
+      .call(this, args[0], user, emit)
+      .then((res: any) => callbackFn(res))
+      .catch((err: any) => {
+        if (err instanceof ToodlError) callbackFn(err);
+      });
 
     // Broadcast changes
     broadcastTodos(user, emit);
