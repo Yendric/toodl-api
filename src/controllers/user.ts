@@ -37,6 +37,15 @@ export const update = [
   },
 ];
 
+export async function destroy(req: Request, res: Response) {
+  if (!req.session.user) return res.status(404).json({ message: "Gebruiker niet gevonden." });
+
+  await req.session.user.destroy();
+  return req.session.destroy(() => {
+    return res.status(200).json({ message: "Gebruiker succesvol verwijderd." });
+  });
+}
+
 export const updatePassword = [
   body(["newPassword", "confirmPassword"]).isLength({ min: 8, max: 50 }),
   body("oldPassword").optional().isLength({ min: 8, max: 50 }),
