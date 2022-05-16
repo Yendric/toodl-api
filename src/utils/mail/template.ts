@@ -1,4 +1,4 @@
-<table width="620" cellspacing="0" cellpadding="0" border="0" align="center">
+export const emailTemplate = `<table width="620" cellspacing="0" cellpadding="0" border="0" align="center">
   <tbody>
     <tr>
       <td bgcolor="#F5F5F5">
@@ -41,10 +41,10 @@
                       <td width="40"></td>
                       <td width="498">
                         <div style="font-family: arial, Arial, sans-serif; color: gray">
-                          <p>Beste ${voornaam}</p>
-                          <p>${tekst}</p>
+                          <p>Beste {voornaam}</p>
+                          <p>{tekst}</p>
                           <ul>
-                            ${todoHTML}
+                            {todoHTML}
                           </ul>
                         </div>
                       </td>
@@ -134,3 +134,4 @@
     </tr>
   </tbody>
 </table>
+`;

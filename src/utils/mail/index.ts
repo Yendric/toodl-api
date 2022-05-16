@@ -1,8 +1,8 @@
 import nodemailer from "nodemailer";
 import dayjs from "dayjs";
-import fs from "fs";
 import Todo from "../../models/Todo";
 import { success, error } from "../logging";
+import { emailTemplate } from "./template";
 
 export default function (todos: Todo[], email: string, voornaam: string, onderwerp: string, tekst: string) {
   const transporter = nodemailer.createTransport({
@@ -24,12 +24,7 @@ export default function (todos: Todo[], email: string, voornaam: string, onderwe
     )
     .join("");
 
-  const html = fs
-    .readFileSync("./template.html")
-    .toString()
-    .replace("${voornaam}", voornaam)
-    .replace("${tekst}", tekst)
-    .replace("${todoHTML}", todoHTML);
+  const html = emailTemplate.replace("{voornaam}", voornaam).replace("{tekst}", tekst).replace("{todoHTML}", todoHTML);
 
   transporter.sendMail(
     {
