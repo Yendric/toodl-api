@@ -21,10 +21,11 @@ export default class Router {
       .then((res: any) => callbackFn(res))
       .catch((err: any) => {
         if (err instanceof ToodlError) callbackFn(err);
+      })
+      .finally(() => {
+        // Broadcast changes
+        broadcastTodos(user, emit);
+        broadcastLists(user, emit);
       });
-
-    // Broadcast changes
-    broadcastTodos(user, emit);
-    broadcastLists(user, emit);
   }
 }
