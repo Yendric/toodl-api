@@ -11,7 +11,11 @@
     "serve": "node dist/server.js",
     "dev": "set DEBUG=true && ts-node-dev --respawn --transpile-only ./src/server.ts",
     "test": "jest --forceExit --coverage --verbose",
-    "migrate": "tsc src/database/migrations/* --outdir dist/migrations && npx sequelize-cli db:migrate --url 'sqlite:./database.sqlite' --migrations-path dist/migrations"
+    "migrate": "tsc src/database/migrations/* --outdir dist/migrations && npx sequelize-cli db:migrate --url 'sqlite:./database.sqlite' --migrations-path dist/migrations",
+    "prepare": "husky install"
+  },
+  "lint-staged": {
+    "**/*": "prettier --write --ignore-unknown"
   },
   "author": "Yendric Van Roey",
   "license": "MIT",
@@ -49,7 +53,9 @@
     "@typescript-eslint/parser": "^5.10.0",
     "eslint": "^8.7.0",
     "eslint-config-prettier": "^8.4.0",
+    "husky": "^8.0.1",
     "jest": "^27.4.7",
+    "lint-staged": "^13.0.3",
     "prettier": "2.5.1",
     "supertest": "^6.2.1",
     "ts-jest": "^27.1.3",
