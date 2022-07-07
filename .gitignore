@@ -37,3 +37,6 @@ Thumbs.db
 
 # Database
 database.sqlite
+
+# Sessions
+sessions
