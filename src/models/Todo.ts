@@ -67,7 +67,9 @@ export default class Todo extends Model {
   @Column
   public listId!: number;
 
-  @BelongsTo(() => List)
+  @BelongsTo(() => List, {
+    onDelete: "CASCADE",
+  })
   public list!: List;
 
   @ForeignKey(() => User)

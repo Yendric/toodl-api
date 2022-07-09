@@ -26,6 +26,10 @@ export default class List extends Model {
   @Column
   public name!: string;
 
+  @Default(false)
+  @Column
+  public withoutDates!: boolean;
+
   @Default("#000000")
   @Column
   public color!: string;
