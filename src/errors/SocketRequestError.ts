@@ -1,4 +1,4 @@
-import { ToodlError } from "./ToodlError";
+import { ToodlError } from "@/errors/ToodlError";
 
 export class SocketRequestError extends ToodlError {
   constructor(message: string) {

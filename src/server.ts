@@ -1,12 +1,12 @@
-import { app } from ".";
-import { announce } from "./utils/logging";
 import { createServer } from "http";
+import { app } from "@/index";
+import { announce } from "@/utils/logging";
 
 const port = process.env.PORT ?? 3000;
 
-const server = createServer(app);
-export default server;
-import "./socket";
+export const server = createServer(app);
+import { io } from "./socket";
+export { io };
 
 server.listen(port, () => {
   announce(`App is online op poort ${port}. Bezoek ${process.env.CALLBACK_URI} in je browser.`);

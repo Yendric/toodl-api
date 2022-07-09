@@ -1,8 +1,8 @@
 import nodemailer from "nodemailer";
 import dayjs from "dayjs";
-import Todo from "../../models/Todo";
-import { success, error } from "../logging";
-import { emailTemplate } from "./template";
+import Todo from "@/models/Todo";
+import { success, error } from "@/utils/logging";
+import { emailTemplate } from "@/utils/mail/template";
 
 export default function (todos: Todo[], email: string, voornaam: string, onderwerp: string, tekst: string) {
   const transporter = nodemailer.createTransport({

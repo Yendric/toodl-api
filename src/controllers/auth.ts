@@ -1,11 +1,11 @@
-import { getUserByEmail } from "../utils/database";
 import bcrypt from "bcryptjs";
-import Users from "../models/User";
 import { OAuth2Client } from "google-auth-library";
 import { Request, Response } from "express";
-import { error } from "../utils/logging";
 import { body } from "express-validator";
-import validate from "../middleware/validation";
+import { getUserByEmail } from "@/utils/database";
+import Users from "@/models/User";
+import { error } from "@/utils/logging";
+import validate from "@/middleware/validation";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -29,9 +29,9 @@ export const login = [
 ];
 
 export const register = [
-  body("email").isEmail(),
-  body("password").isLength({ min: 8, max: 150 }),
-  body("username").isLength({ min: 1, max: 30 }),
+  body("email").isEmail().isLength({ max: 50 }),
+  body("password").isLength({ min: 8, max: 50 }),
+  body("username").isLength({ min: 1, max: 50 }),
   validate,
   async function (req: Request, res: Response) {
     const { username, email, password } = req.body;
@@ -60,6 +60,7 @@ export async function logout(req: Request, res: Response) {
       error("Fout bij uitloggen: " + err);
       return res.status(500).json({ message: "Er ging iets fout bij het uitloggen." });
     }
+    res.clearCookie("toodl_session");
     return res.status(200).json({ message: "Succesvol uitgelogd." });
   });
 }

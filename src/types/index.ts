@@ -1,5 +1,5 @@
 import http from "http";
-import User from "../models/User";
+import User from "@/models/User";
 
 declare module "express-session" {
   interface SessionData {

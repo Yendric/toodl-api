@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
-import { IncomingMessage } from "../types";
 import { ExtendedError } from "socket.io/dist/namespace";
-import { getUserById } from "../utils/database";
+import { IncomingMessage } from "@/types";
+import { getUserById } from "@/utils/database";
 
 /*
 / Deze middleware kan zowel gebruikt worden door express als door socket.io, vandaar de union types.

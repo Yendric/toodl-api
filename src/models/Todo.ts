@@ -10,9 +10,9 @@ import {
   Default,
   BeforeCreate,
 } from "sequelize-typescript";
-import { DatabaseLimitError } from "../errors/DatabaseLimitError";
-import List from "./List";
-import User from "./User";
+import { DatabaseLimitError } from "@/errors/DatabaseLimitError";
+import List from "@/models/List";
+import User from "@/models/User";
 
 @Table
 export default class Todo extends Model {

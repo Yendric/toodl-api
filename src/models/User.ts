@@ -11,8 +11,8 @@ import {
   Default,
   AfterCreate,
 } from "sequelize-typescript";
-import List from "./List";
-import Todo from "./Todo";
+import List from "@/models/List";
+import Todo from "@/models/Todo";
 
 @Table
 export default class User extends Model {

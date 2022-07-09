@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import cron from "node-cron";
-import User from "../models/User";
-import mail from "../utils/mail";
+import User from "@/models/User";
+import mail from "@/utils/mail";
 
 /*
 /  Email schedule, elke dag om 18:00 uur e-mail over de todos van morgen.

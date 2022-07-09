@@ -12,9 +12,9 @@ import {
   BeforeDestroy,
   BeforeBulkDestroy,
 } from "sequelize-typescript";
-import { DatabaseLimitError } from "../errors/DatabaseLimitError";
-import Todo from "./Todo";
-import User from "./User";
+import { DatabaseLimitError } from "@/errors/DatabaseLimitError";
+import Todo from "@/models/Todo";
+import User from "@/models/User";
 
 @Table
 export default class List extends Model {

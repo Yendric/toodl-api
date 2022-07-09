@@ -1,8 +1,8 @@
 import { Sequelize } from "sequelize-typescript";
-import { log } from "../utils/logging";
-import List from "./List";
-import Todo from "./Todo";
-import User from "./User";
+import { log } from "@/utils/logging";
+import List from "@/models/List";
+import Todo from "@/models/Todo";
+import User from "@/models/User";
 
 const sequelize = new Sequelize("database", "user", "password", {
   host: "localhost",

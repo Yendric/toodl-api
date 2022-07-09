@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import { body, matchedData } from "express-validator";
-import validate from "../middleware/validation";
+import validate from "@/middleware/validation";
 
 export async function info(req: Request, res: Response) {
   if (!req.session.user) return res.status(404).json({ message: "Gebruiker niet gevonden." });
@@ -20,9 +20,9 @@ export async function info(req: Request, res: Response) {
 
 export const update = [
   body("email").isEmail().normalizeEmail(),
-  body("username").isString().isLength({ min: 1, max: 30 }),
+  body("username").isString().isLength({ min: 1, max: 50 }),
   body(["smartschoolCourseExport", "smartschoolTaskExport"])
-    .optional({ nullable: true })
+    .optional({ nullable: true, checkFalsy: true })
     .isURL()
     .isLength({ min: 80, max: 90 })
     .contains("smartschool.be"),
