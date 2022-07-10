@@ -29,7 +29,7 @@ app.use(sessionMiddleware);
 app.use(`/${API_VERSION}`, routes);
 app.use(handleError);
 
-import "./models/database";
-import "./cronjobs";
+import "@/models/database";
+import "@/cronjobs";
 
 export { sessionMiddleware, app, API_VERSION };
