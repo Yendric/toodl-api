@@ -18,6 +18,7 @@ const sessionMiddleware = session({
   secret: process.env.SECRET ?? "CHANGE-ME-IN-DOTENV-Q#%$GR$A&EHL*H@UA#RXQPSWHCDUN",
   saveUninitialized: false,
   resave: false,
+  rolling: true,
   cookie: { maxAge: 2592000000 },
   name: "toodl_session",
 });
