@@ -1,8 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import { DatabaseLimitError } from "./errors/DatabaseLimitError";
 
-import { ToodlError } from "./errors/ToodlError";
 import dayjs from "dayjs";
+import { ToodlError } from "./errors/ToodlError";
 
 const prisma = new PrismaClient().$extends({
   query: {

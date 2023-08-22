@@ -20,7 +20,7 @@ export async function update(req: Request, res: Response) {
         listId: z.string().regex(/^\d+$/).transform(Number),
       }),
     }),
-    req
+    req,
   );
   const userId = getAuthenticatedUserId(req);
 
@@ -40,7 +40,7 @@ export async function destroy(req: Request, res: Response) {
         listId: z.string().regex(/^\d+$/).transform(Number),
       }),
     }),
-    req
+    req,
   );
 
   await prisma.list.delete({ where: { id: params.listId, userId } });
@@ -73,6 +73,6 @@ export async function index(req: Request, res: Response) {
       orderBy: {
         name: "asc",
       },
-    })
+    }),
   );
 }

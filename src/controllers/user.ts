@@ -32,7 +32,7 @@ export async function update(req: Request, res: Response) {
         nowNotification: z.boolean(),
       }),
     }),
-    req
+    req,
   );
   const userId = getAuthenticatedUserId(req);
 
@@ -67,7 +67,7 @@ export async function updatePassword(req: Request, res: Response) {
         oldPassword: z.string().min(8).max(50).optional(),
       }),
     }),
-    req
+    req,
   );
 
   const user = getAuthenticatedUser(req);

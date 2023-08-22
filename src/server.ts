@@ -1,6 +1,6 @@
-import { createServer } from "http";
 import { app } from "@/index";
 import { announce } from "@/utils/logging";
+import { createServer } from "http";
 
 const port = process.env.PORT ?? 3000;
 

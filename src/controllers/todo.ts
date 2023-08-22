@@ -58,7 +58,7 @@ export async function destroy(req: Request, res: Response) {
         todoId: z.string().regex(/^\d+$/).transform(Number),
       }),
     }),
-    req
+    req,
   );
 
   await prisma.todo.delete({
@@ -80,7 +80,7 @@ export async function update(req: Request, res: Response) {
         todoId: z.string().regex(/^\d+$/).transform(Number),
       }),
     }),
-    req
+    req,
   );
   const userId = getAuthenticatedUserId(req);
 
@@ -122,6 +122,6 @@ export async function index(req: Request, res: Response) {
           startTime: "asc",
         },
       ],
-    })
+    }),
   );
 }

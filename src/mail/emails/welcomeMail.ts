@@ -15,6 +15,6 @@ Begin meteen: https://toodl.yendric.be/<br/><br/>
 Als je vragen hebt over het account of als je merkt dat dit account niet door jou is aangemaakt, aarzel dan niet om contact met ons op te nemen. We zijn er om te helpen.<br/><br/>
 
 Met vriendelijke groeten,<br/>
-Het Toodl-team`
+Het Toodl-team`,
   );
 }

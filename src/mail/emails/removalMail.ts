@@ -14,6 +14,6 @@ export default function (user: { email: string } & { [x: string | number | symbo
     Bedankt voor je vertrouwen in Toodl. We wensen je het allerbeste in alles wat je doet.<br/><br/>
 
     Met vriendelijke groeten,<br/>
-    Het Toodl-team`
+    Het Toodl-team`,
   );
 }

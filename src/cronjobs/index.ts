@@ -55,7 +55,7 @@ cron.schedule("* * * * *", async function () {
         currentTodos,
         user,
         "U heeft een todo gepland",
-        "op dit moment heeft u de volgende todo('s) gepland, vergeet ze niet:"
+        "op dit moment heeft u de volgende todo('s) gepland, vergeet ze niet:",
       );
     }
 
@@ -69,7 +69,7 @@ cron.schedule("* * * * *", async function () {
         quartreTodos,
         user,
         "Todos over een kwartier",
-        "over een kwartier heeft u de volgende todo('s) gepland, vergeet ze niet:"
+        "over een kwartier heeft u de volgende todo('s) gepland, vergeet ze niet:",
       );
     }
   });

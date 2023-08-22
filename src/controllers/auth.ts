@@ -18,7 +18,7 @@ export async function login(req: Request, res: Response) {
         password: z.string().min(8).max(50),
       }),
     }),
-    req
+    req,
   );
 
   const user = await getUserByEmail(body.email);
@@ -41,7 +41,7 @@ export async function register(req: Request, res: Response) {
         password: z.string().min(8).max(50),
       }),
     }),
-    req
+    req,
   );
 
   const oldUser = await getUserByEmail(body.email);

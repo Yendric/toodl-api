@@ -1,11 +1,11 @@
+import handleError from "@/middleware/errorHandler";
+import routes from "@/routes/routes";
+import cors from "cors";
+import { config } from "dotenv";
 import express from "express";
 import "express-async-errors";
 import session from "express-session";
-import cors from "cors";
-import { config } from "dotenv";
 import helmet from "helmet";
-import routes from "@/routes/routes";
-import handleError from "@/middleware/errorHandler";
 
 config();
 const API_VERSION = "v1";
@@ -32,4 +32,4 @@ app.use(handleError);
 
 import "@/cronjobs";
 
-export { sessionMiddleware, app, API_VERSION };
+export { API_VERSION, app, sessionMiddleware };
