@@ -6,7 +6,7 @@ export default function (
   todos: Todo[],
   user: { email: string } & { [x: string | number | symbol]: unknown },
   tekst: string,
-  onderwerp: string
+  onderwerp: string,
 ) {
   const todoHTML =
     "<ul>" +
@@ -17,7 +17,7 @@ export default function (
 		${todo.subject}
 		 - 
 		${dayjs(todo.startTime).format("DD/MM/YYYY HH:mm")};
-		</li>`
+		</li>`,
       )
       .join("") +
     "</ul>";

@@ -26,6 +26,6 @@ export function sendMail(to: string, tekst: string, onderwerp: string, html: str
       } else {
         success("Email verzonden: " + info.response);
       }
-    }
+    },
   );
 }
