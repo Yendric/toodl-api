@@ -7,7 +7,7 @@ WORKDIR /usr/src/app
 
 COPY . . 
 
-RUN yarn install
+RUN yarn install --production=false
 RUN yarn prisma generate 
 RUN yarn build
 
