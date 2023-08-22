@@ -1,7 +1,7 @@
-import { Router } from "express";
 import * as AuthController from "@/controllers/auth";
-import userdata from "@/routes/user";
 import isLoggedIn from "@/middleware/auth";
+import userdata from "@/routes/user";
+import { Router } from "express";
 
 const router = Router();
 

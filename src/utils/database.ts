@@ -1,7 +1,7 @@
-import Users from "@/models/User";
+import prisma from "@/prisma";
 
 export async function getUserByEmail(email: string) {
-  return Users.findOne({
+  return prisma.user.findUnique({
     where: {
       email,
     },
@@ -9,7 +9,7 @@ export async function getUserByEmail(email: string) {
 }
 
 export async function getUserById(id: number) {
-  return Users.findOne({
+  return prisma.user.findUnique({
     where: {
       id,
     },

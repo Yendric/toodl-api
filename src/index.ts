@@ -1,8 +1,8 @@
 import express from "express";
+import "express-async-errors";
 import session from "express-session";
 import cors from "cors";
 import { config } from "dotenv";
-import SessionFileStore from "session-file-store";
 import helmet from "helmet";
 import routes from "@/routes/routes";
 import handleError from "@/middleware/errorHandler";
@@ -12,7 +12,7 @@ const API_VERSION = "v1";
 
 const app = express();
 
-const FileStore = SessionFileStore(session);
+const FileStore = require("session-file-store")(session);
 const sessionMiddleware = session({
   store: new FileStore(),
   secret: process.env.SECRET ?? "CHANGE-ME-IN-DOTENV-Q#%$GR$A&EHL*H@UA#RXQPSWHCDUN",
@@ -30,7 +30,6 @@ app.use(sessionMiddleware);
 app.use(`/${API_VERSION}`, routes);
 app.use(handleError);
 
-import "@/models/database";
 import "@/cronjobs";
 
 export { sessionMiddleware, app, API_VERSION };

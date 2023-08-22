@@ -1,48 +1,78 @@
-import { body, matchedData } from "express-validator";
+import prisma from "@/prisma";
+import { getAuthenticatedUserId } from "@/utils/auth";
+import { zParse } from "@/utils/validation";
 import { Request, Response } from "express";
-import asyncHandler from "express-async-handler";
-import List from "@/models/List";
-import validate from "@/middleware/validation";
-import { broadcastLists, broadcastTodos } from "@/socket/broadcastingService";
+import { z } from "zod";
 
-export const update = [
-  body("name").isString().isLength({ min: 1, max: 20 }),
-  body("color").isString().isLength({ min: 7, max: 7 }),
-  body("withoutDates").isBoolean(),
-  validate,
-  asyncHandler(async (req: Request, res: Response) => {
-    const list = await List.update(matchedData(req), {
-      where: { id: req.params.listId, userId: req.session.user?.id },
-    });
-    broadcastLists(req.session.user);
-    res.json(list);
+const dataSchema = z.object({
+  body: z.object({
+    name: z.string().min(1).max(20),
+    color: z.string().length(7),
+    withoutDates: z.boolean(),
   }),
-];
-
-export const destroy = asyncHandler(async (req: Request, res: Response) => {
-  await List.destroy({ where: { id: req.params.listId, userId: req.session.user?.id } });
-
-  broadcastLists(req.session.user);
-  broadcastTodos(req.session.user);
-  res.json(true);
 });
 
-export const store = [
-  body("name").isString().isLength({ min: 1, max: 20 }),
-  body("color").isString().isLength({ min: 7, max: 7 }),
-  body("withoutDates").isBoolean(),
-  validate,
-  asyncHandler(async (req: Request, res: Response) => {
-    const list = await List.create({ ...matchedData(req), userId: req.session.user?.id });
-    broadcastLists(req.session.user);
-    res.json(list);
-  }),
-];
+export async function update(req: Request, res: Response) {
+  const { body } = await zParse(dataSchema, req);
+  const { params } = await zParse(
+    z.object({
+      params: z.object({
+        listId: z.string().regex(/^\d+$/).transform(Number),
+      }),
+    }),
+    req
+  );
+  const userId = getAuthenticatedUserId(req);
 
-export const index = async (req: Request, res: Response) => {
+  const list = await prisma.list.update({
+    data: body,
+    where: { id: params.listId, userId },
+  });
+
+  res.json(list);
+}
+
+export async function destroy(req: Request, res: Response) {
+  const userId = getAuthenticatedUserId(req);
+  const { params } = await zParse(
+    z.object({
+      params: z.object({
+        listId: z.string().regex(/^\d+$/).transform(Number),
+      }),
+    }),
+    req
+  );
+
+  await prisma.list.delete({ where: { id: params.listId, userId } });
+
+  res.json(true);
+}
+
+export async function store(req: Request, res: Response) {
+  const { body } = await zParse(dataSchema, req);
+  const userId = getAuthenticatedUserId(req);
+
+  const list = await prisma.list.create({
+    data: {
+      ...body,
+      userId,
+    },
+  });
+
+  res.json(list);
+}
+
+export async function index(req: Request, res: Response) {
+  const userId = getAuthenticatedUserId(req);
+
   res.json(
-    await req.session.user?.$get("lists", {
-      order: [["name", "ASC"]],
+    await prisma.list.findMany({
+      where: {
+        userId,
+      },
+      orderBy: {
+        name: "asc",
+      },
     })
   );
-};
+}

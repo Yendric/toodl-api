@@ -1,88 +1,127 @@
+import { DataValidationError } from "@/errors/DataValidationError";
+import prisma from "@/prisma";
+import { getAuthenticatedUserId } from "@/utils/auth";
+import { zParse } from "@/utils/validation";
 import dayjs from "dayjs";
 import { Request, Response } from "express";
-import { body, matchedData } from "express-validator";
-import asyncHandler from "express-async-handler";
-import validate from "@/middleware/validation";
-import Todo from "@/models/Todo";
-import { broadcastTodos } from "@/socket/broadcastingService";
-import { DataValidationError } from "@/errors/DataValidationError";
+import { z } from "zod";
 
-const validationArray = [
-  body("done").isBoolean().optional({ nullable: true }),
-  body("done").default(false),
-  body("subject").isString().isLength({ max: 255 }),
-  body("description").isString().isLength({ max: 255 }).optional({ nullable: true }),
-  body("description").default(""),
-  body("isAllDay").isBoolean().optional({ nullable: true }),
-  body("location").isString().isLength({ max: 255 }).optional({ nullable: true }),
-  body("location").default(""),
-  body("recurrenceRule").isString().isLength({ max: 255 }).optional({ nullable: true }),
-  body("recurrenceRule").default(""),
-  body("startTimeZone").isString().isLength({ max: 255 }).optional({ nullable: true }),
-  body("startTimeZone").default(""),
-  body("endTimeZone").isString().isLength({ max: 255 }).optional({ nullable: true }),
-  body("endTimeZone").default(""),
-  body("startTime").isISO8601().toDate().optional({ nullable: true }),
-  body("endTime").isISO8601().toDate().optional({ nullable: true }),
-  body("recurrenceException").isString().isLength({ max: 255 }).optional({ nullable: true }),
-  body("recurrenceException").default(""),
-  body("listId").isNumeric().optional({ nullable: true }),
-  body("listId").default(null),
-];
-
-export const store = [
-  ...validationArray,
-  validate,
-  asyncHandler(async (req: Request, res: Response) => {
-    const data = matchedData(req);
-    data.startTime ??= new Date();
-    data.endTime ??= dayjs(data.startTime).add(1, "hour").toDate();
-
-    // Voorkom dat een todo in iemand anders lijst wordt toegevoegd
-    if (data.listId) {
-      const list = (await req.session.user?.$get("lists"))?.find((l) => l.id === data.listId);
-      if (!list) throw new DataValidationError("Lijst niet gevonden.");
-    }
-
-    await Todo.create({ ...data, userId: req.session.user?.id });
-    broadcastTodos(req.session.user);
-    res.json(true);
+const dataSchema = z.object({
+  body: z.object({
+    done: z.boolean().default(false),
+    subject: z.string().min(1).max(255),
+    description: z.string().max(255).nullable().default(""),
+    isAllDay: z.boolean().nullable().default(false),
+    location: z.string().max(255).nullable().default(""),
+    recurrenceRule: z.string().max(255).nullable().default(""),
+    recurrenceException: z.string().max(255).nullable().default(""),
+    startTimezone: z.string().max(255).nullable().default(""),
+    endTimezone: z.string().max(255).nullable().default(""),
+    startTime: z.string().pipe(z.coerce.date()).default(new Date().toISOString()),
+    endTime: z.string().pipe(z.coerce.date()).optional().nullable(),
+    listId: z.number().nullable().default(null),
   }),
-];
-
-export const destroy = asyncHandler(async (req: Request, res: Response) => {
-  broadcastTodos(req.session.user);
-  await Todo.destroy({ where: { id: req.params.todoId, userId: req.session.user?.id } });
-
-  res.json(true);
 });
 
-export const update = [
-  ...validationArray,
-  validate,
-  asyncHandler(async (req: Request, res: Response) => {
-    const data = matchedData(req);
-    // Voorkom dat een todo in iemand anders lijst wordt toegevoegd
-    if (data.listId) {
-      const list = (await req.session.user?.$get("lists"))?.find((l) => l.id === data.listId);
-      if (!list) throw new DataValidationError("Lijst niet gevonden.");
-    }
+export async function store(req: Request, res: Response) {
+  const { body } = await zParse(dataSchema, req);
+  const userId = getAuthenticatedUserId(req);
 
-    await Todo.update(data, {
-      where: { id: req.params.todoId, userId: req.session.user?.id },
+  body.endTime ??= dayjs(body.startTime).add(1, "hour").toDate();
+
+  // Voorkom dat een todo in iemand anders lijst wordt toegevoegd
+  if (body.listId) {
+    const list = await prisma.list.findFirst({
+      where: {
+        id: body.listId,
+        userId,
+      },
     });
-    broadcastTodos(req.session.user);
-    res.json(true);
-  }),
-];
+    if (!list) throw new DataValidationError("Lijst niet gevonden.");
+  }
 
-export const index = async (req: Request, res: Response) => {
+  const todo = await prisma.todo.create({
+    data: {
+      ...body,
+      userId,
+    },
+  });
+
+  res.json(todo);
+}
+
+export async function destroy(req: Request, res: Response) {
+  const userId = getAuthenticatedUserId(req);
+  const { params } = await zParse(
+    z.object({
+      params: z.object({
+        todoId: z.string().regex(/^\d+$/).transform(Number),
+      }),
+    }),
+    req
+  );
+
+  await prisma.todo.delete({
+    where: {
+      id: params.todoId,
+      userId,
+    },
+  });
+
+  res.json(true);
+}
+
+export async function update(req: Request, res: Response) {
+  const { body } = await zParse(dataSchema, req);
+
+  const { params } = await zParse(
+    z.object({
+      params: z.object({
+        todoId: z.string().regex(/^\d+$/).transform(Number),
+      }),
+    }),
+    req
+  );
+  const userId = getAuthenticatedUserId(req);
+
+  // Voorkom dat een todo in iemand anders lijst wordt toegevoegd
+  if (body.listId) {
+    const list = await prisma.list.findFirst({
+      where: {
+        id: body.listId,
+        userId,
+      },
+    });
+    if (!list) throw new DataValidationError("Lijst niet gevonden.");
+  }
+
+  const todo = await prisma.todo.update({
+    data: body,
+    where: {
+      id: params.todoId,
+      userId: userId,
+    },
+  });
+
+  res.json(todo);
+}
+
+export async function index(req: Request, res: Response) {
+  const userId = getAuthenticatedUserId(req);
+
   res.json(
-    await req.session.user?.$get("todos", {
-      order: [
-        ["done", "ASC"],
-        ["startTime", "ASC"],
+    await prisma.todo.findMany({
+      where: {
+        userId: userId,
+      },
+      orderBy: [
+        {
+          done: "asc",
+        },
+        {
+          startTime: "asc",
+        },
       ],
     })
   );
-};
+}

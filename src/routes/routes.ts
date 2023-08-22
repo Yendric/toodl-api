@@ -1,8 +1,8 @@
-import { Router } from "express";
 import isLoggedIn from "@/middleware/auth";
 import auth from "@/routes/auth";
 import list from "@/routes/list";
 import todo from "@/routes/todo";
+import { Router } from "express";
 
 const router = Router();
 

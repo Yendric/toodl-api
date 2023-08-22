@@ -2,7 +2,7 @@
   "compilerOptions": {
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "target": "es2016",
+    "target": "esnext",
     "module": "commonjs",
     "typeRoots": ["./node_modules/@types", "./src/types/index.ts"],
     "outDir": "./dist",

@@ -1,15 +1,16 @@
-import { Request, Response, NextFunction } from "express";
 import { ToodlError } from "@/errors/ToodlError";
+import { NextFunction, Request, Response } from "express";
+import { ZodError } from "zod";
 
 function handleError(err: Error, req: Request, res: Response, next: NextFunction) {
-  let status = 422;
-
-  if (!(err instanceof ToodlError)) {
+  if (err instanceof ZodError) {
+    return res.status(422).json({ message: "Validation error", errors: err.errors });
+  } else if (err instanceof ToodlError) {
+    return res.status(422).json({ message: err.message });
+  } else {
     console.log(err);
-    err = new ToodlError("Er is iets foutgegaan.", "Server error");
-    status = 500;
+    return res.status(500).json({ message: "Er is iets foutgegaan." });
   }
-  res.status(status).json({ message: err.message });
 }
 
 export default handleError;

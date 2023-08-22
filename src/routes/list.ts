@@ -1,5 +1,5 @@
-import { Router } from "express";
 import * as ListController from "@/controllers/list";
+import { Router } from "express";
 
 const router = Router();
 
