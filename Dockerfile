@@ -1,14 +1,31 @@
-FROM node:16
+FROM node:18-alpine as production
 
-WORKDIR /app
+ENV NODE_ENV=production
 
-COPY package.json ./
-COPY yarn.lock ./
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
+
+COPY . . 
 
 RUN yarn install
-
-COPY . .
-
-EXPOSE 3001
+RUN yarn prisma generate 
+RUN yarn prisma migrate deploy
+RUN yarn build
 
 CMD ["yarn", "serve"]
+
+FROM node:18-alpine as development
+
+ENV NODE_ENV=development
+
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
+
+COPY . . 
+
+RUN yarn install
+RUN yarn prisma generate 
+
+CMD [ "yarn", "dev" ]
+
+EXPOSE 3001

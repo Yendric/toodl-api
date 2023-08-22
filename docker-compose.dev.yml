@@ -3,9 +3,16 @@ version: "3.1"
 services:
   toodl-api:
     container_name: toodl_api
-    image: ghcr.io/yendric/toodl-api:latest
+    stdin_open: true
+    build:
+      context: .
+      target: development
+    volumes:
+      - ./:/usr/src/app
     ports:
       - 3001:3001
+    depends_on:
+      - database
   database:
     container_name: toodl_postgres
     image: postgres
