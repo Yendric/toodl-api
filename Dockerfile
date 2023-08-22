@@ -9,7 +9,6 @@ COPY . .
 
 RUN yarn install
 RUN yarn prisma generate 
-RUN yarn prisma migrate deploy
 RUN yarn build
 
 CMD ["yarn", "serve"]
