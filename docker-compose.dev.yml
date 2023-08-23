@@ -1,18 +1,18 @@
-version: "3.1"
+version: "3.8"
 
 services:
-  toodl-api:
-    container_name: toodl_api
-    stdin_open: true
-    build:
-      context: .
-      target: development
-    volumes:
-      - ./:/usr/src/app
-    ports:
-      - 3001:3001
-    depends_on:
-      - database
+  # toodl_api:
+  #   container_name: toodl_api
+  #   stdin_open: true
+  #   build:
+  #     context: .
+  #     target: development
+  #   volumes:
+  #     - ./:/usr/src/app
+  #   ports:
+  #     - ${PORT}:${PORT}
+  #   depends_on:
+  #     - database
   database:
     container_name: toodl_postgres
     image: postgres
