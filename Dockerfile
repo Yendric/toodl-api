@@ -1,29 +1,27 @@
-FROM node:18-alpine as production
-
-ENV NODE_ENV=production
+FROM node:18-alpine as base
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
+COPY package.json yarn.lock ./
+RUN yarn install --immutable --immutable-cache --check-cache
+
+COPY prisma ./
+RUN yarn prisma generate 
+
 COPY . . 
 
-RUN yarn install --production=false
-RUN yarn prisma generate 
+FROM base as production
+
+ENV NODE_ENV=production
+
 RUN yarn build
 
 CMD ["yarn", "serve"]
 
-FROM node:18-alpine as development
+FROM base as development
 
 ENV NODE_ENV=development
-
-RUN mkdir -p /usr/src/app
-WORKDIR /usr/src/app
-
-COPY . . 
-
-RUN yarn install
-RUN yarn prisma generate 
 
 CMD [ "yarn", "dev" ]
 
