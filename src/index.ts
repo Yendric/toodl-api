@@ -6,13 +6,14 @@ import express from "express";
 import "express-async-errors";
 import session from "express-session";
 import helmet from "helmet";
+import SessionFileStore from "session-file-store";
 
 config();
 const API_VERSION = "v1";
 
 const app = express();
 
-const FileStore = require("session-file-store")(session);
+const FileStore = SessionFileStore(session);
 const sessionMiddleware = session({
   store: new FileStore(),
   secret: process.env.SECRET ?? "CHANGE-ME-IN-DOTENV-Q#%$GR$A&EHL*H@UA#RXQPSWHCDUN",

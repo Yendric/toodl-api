@@ -8,7 +8,7 @@ services:
     ports:
       - ${PORT}:${PORT}
     env_file:
-      .env
+      - .env
   database:
     container_name: toodl_postgres
     image: postgres

@@ -7,7 +7,7 @@ async function isLoggedIn(req: Request, res: Response, next: NextFunction) {
 
     if (!user) {
       // Gebruiker bestaat niet meer, uitloggen
-      return req.session.destroy((_) => {
+      return req.session.destroy(() => {
         res.clearCookie("toodl_session");
         return res.status(200).json({ message: "Gebruiker is verwijderd. U bent nu uitgelogd." });
       });
