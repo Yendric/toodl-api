@@ -25,7 +25,7 @@ const sessionMiddleware = session({
 });
 
 app.use(helmet());
-app.use(cors({ origin: process.env.APP_URI, credentials: true }));
+app.use(cors({ origin: process.env.APP_URI?.split(","), credentials: true }));
 app.use(express.json());
 app.use(sessionMiddleware);
 app.use(`/${API_VERSION}`, routes);
