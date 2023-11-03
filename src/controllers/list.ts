@@ -8,7 +8,6 @@ const dataSchema = z.object({
   body: z.object({
     name: z.string().min(1).max(20),
     color: z.string().length(7),
-    withoutDates: z.boolean(),
   }),
 });
 

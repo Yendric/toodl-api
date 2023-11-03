@@ -10,6 +10,7 @@ const dataSchema = z.object({
   body: z.object({
     done: z.boolean().default(false),
     subject: z.string().min(1).max(255),
+    enableDeadline: z.boolean().nullable().default(false),
     description: z.string().max(255).nullable().default(""),
     isAllDay: z.boolean().nullable().default(false),
     location: z.string().max(255).nullable().default(""),

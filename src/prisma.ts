@@ -63,7 +63,6 @@ const prisma = new PrismaClient().$extends({
             userId: createdUser.id,
             name: "Boodschappen",
             color: "#33AAFF",
-            withoutDates: true,
           },
         });
 
@@ -90,7 +89,6 @@ const prisma = new PrismaClient().$extends({
             userId: createdUser.id,
             name: "Planning",
             color: "#FF0000",
-            withoutDates: false,
           },
         });
 
