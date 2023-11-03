@@ -97,6 +97,7 @@ const prisma = new PrismaClient().$extends({
             userId: createdUser.id,
             listId: planning.id,
             startTime: new Date(),
+            enableDeadline: true,
             endTime: dayjs(new Date()).add(1, "hour").toDate(),
             subject: "Maak todos met datum & tijd en bekijk ze in de planningweergave bovenaan",
           },
