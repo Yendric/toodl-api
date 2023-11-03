@@ -9,8 +9,8 @@ assignees: ""
 **Heeft uw verzoek betrekking op een probleem?**
 Een duidelijke en beknopte beschrijving van het probleem.
 
-**Beschrijf de oplossing die u wilt**
-Een duidelijke en beknopte beschrijving van wat u wilt dat er gebeurt.
+**Beschrijf de oplossing die u wil**
+Een duidelijke en beknopte beschrijving van wat u wil dat er gebeurt.
 
 **Beschrijf alternatieven die je hebt overwogen**
 Een duidelijke en beknopte beschrijving van eventuele alternatieve oplossingen die u hebt overwogen.
