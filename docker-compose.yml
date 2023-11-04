@@ -5,6 +5,8 @@ services:
     container_name: toodl_api
     image: yendric/toodl-api:main
     restart: always
+    volumes:
+      - ./sessions:/usr/src/app/sessions
     ports:
       - ${PORT}:${PORT}
     env_file:
