@@ -19,7 +19,7 @@
   "license": "MIT",
   "dependencies": {
     "@colors/colors": "^1.6.0",
-    "@prisma/client": "5.1.1",
+    "@prisma/client": "5.6.0",
     "@types/session-file-store": "^1.2.2",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
