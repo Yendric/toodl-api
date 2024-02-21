@@ -22,7 +22,7 @@ cron.schedule("0 18 * * *", async function () {
     const todos = user.todos.filter((todo) => {
       const todoDate = dayjs(todo.startTime);
       const tomorrow = dayjs().add(1, "days");
-      return todoDate.isSame(tomorrow, "day");
+      return todo.enableDeadline && todoDate.isSame(tomorrow, "day");
     });
     if (!todos.length) return;
     todoMail(todos, user, "Todo's voor morgen", "morgen heeft u de volgende todo's gepland, vergeet ze niet:");
@@ -48,7 +48,7 @@ cron.schedule("* * * * *", async function () {
     const currentTodos = user.todos.filter((todo) => {
       const now = dayjs();
       const todoDate = dayjs(todo.startTime);
-      return todoDate.isSame(now, "minute");
+      return todo.enableDeadline && todoDate.isSame(now, "minute");
     });
     if (currentTodos.length) {
       todoMail(
@@ -62,7 +62,7 @@ cron.schedule("* * * * *", async function () {
     const quartreTodos = user.todos.filter((todo) => {
       const now = dayjs();
       const todoDate = dayjs(todo.startTime);
-      return todoDate.diff(now, "minute") === 15;
+      return todo.enableDeadline && todoDate.diff(now, "minute") === 15;
     });
     if (quartreTodos.length) {
       todoMail(
