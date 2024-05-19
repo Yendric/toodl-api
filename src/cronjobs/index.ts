@@ -14,6 +14,7 @@ cron.schedule("0 18 * * *", async function () {
       todos: {
         where: {
           done: false,
+          enableDeadline: true,
         },
       },
     },
@@ -40,6 +41,7 @@ cron.schedule("* * * * *", async function () {
       todos: {
         where: {
           done: false,
+          enableDeadline: true,
         },
       },
     },
