@@ -25,7 +25,7 @@ De frontend vind je hier: https://github.com/Yendric/toodl
 - Configuraties meer configureerbaar maken (tijdstippen...)
 - Todolijsten deelbaar maken
 - Browser notification API voor notificaties
-- Deelbare todo's?
+- Deelbare todo's
 - ... laat maar weten
 
 ## Bijdragen
