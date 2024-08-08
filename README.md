@@ -22,7 +22,7 @@ De frontend vind je hier: https://github.com/Yendric/toodl
 ## Todo
 
 - Tests
-- Configuraties meer configureerbaar maken (tijdstippen...)
+- Configuraties meer configureerbaar maken
 - Todolijsten deelbaar maken
 - Browser notification API voor notificaties
 - Deelbare todo's
