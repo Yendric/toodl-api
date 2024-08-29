@@ -17,7 +17,7 @@ SET
         WHERE
             "List"."id" = "Todo"."listId"
             AND "List"."withoutDates" = FALSE
-    )
+    );
 
 -- AlterTable
 ALTER TABLE "List" DROP COLUMN "withoutDates";
