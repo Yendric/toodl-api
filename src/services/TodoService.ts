@@ -1,5 +1,6 @@
 import prisma from "@/prisma";
 import { DataValidationError } from "@/errors/DataValidationError";
+import { DatabaseLimitError } from "@/errors/DatabaseLimitError";
 import dayjs from "dayjs";
 
 export class TodoService {
@@ -20,6 +21,13 @@ export class TodoService {
         where: { id: listId, userId },
       });
       if (!list) throw new DataValidationError("Lijst niet gevonden.");
+
+      const amount = await prisma.todo.count({
+        where: { listId },
+      });
+      if (amount >= 100) {
+        throw new DatabaseLimitError("Je kan maximaal 100 todos per lijst hebben.");
+      }
     }
 
     return await prisma.todo.create({
