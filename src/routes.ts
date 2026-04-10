@@ -70,15 +70,15 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "done": {"dataType":"boolean"},
-            "subject": {"dataType":"string","required":true},
+            "subject": {"dataType":"string","required":true,"validators":{"minLength":{"value":1},"maxLength":{"value":255}}},
             "enableDeadline": {"dataType":"union","subSchemas":[{"dataType":"boolean"},{"dataType":"enum","enums":[null]}]},
-            "description": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},
+            "description": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"validators":{"maxLength":{"value":255}}},
             "isAllDay": {"dataType":"union","subSchemas":[{"dataType":"boolean"},{"dataType":"enum","enums":[null]}]},
-            "location": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},
-            "recurrenceRule": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},
-            "recurrenceException": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},
-            "startTimezone": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},
-            "endTimezone": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},
+            "location": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"validators":{"maxLength":{"value":255}}},
+            "recurrenceRule": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"validators":{"maxLength":{"value":255}}},
+            "recurrenceException": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"validators":{"maxLength":{"value":255}}},
+            "startTimezone": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"validators":{"maxLength":{"value":255}}},
+            "endTimezone": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"validators":{"maxLength":{"value":255}}},
             "startTime": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"datetime"}]},
             "endTime": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"datetime"},{"dataType":"enum","enums":[null]}]},
             "listId": {"dataType":"union","subSchemas":[{"dataType":"double"},{"dataType":"enum","enums":[null]}]},
@@ -89,8 +89,8 @@ const models: TsoaRoute.Models = {
     "ListRequest": {
         "dataType": "refObject",
         "properties": {
-            "name": {"dataType":"string","required":true},
-            "color": {"dataType":"string","required":true},
+            "name": {"dataType":"string","required":true,"validators":{"minLength":{"value":1},"maxLength":{"value":20}}},
+            "color": {"dataType":"string","required":true,"validators":{"pattern":{"value":"^#[0-9A-Fa-f]{6}$"}}},
         },
         "additionalProperties": false,
     },
@@ -106,8 +106,8 @@ const models: TsoaRoute.Models = {
     "LoginRequest": {
         "dataType": "refObject",
         "properties": {
-            "email": {"dataType":"string","required":true},
-            "password": {"dataType":"string","required":true},
+            "email": {"dataType":"string","required":true,"validators":{"minLength":{"value":3},"maxLength":{"value":50}}},
+            "password": {"dataType":"string","required":true,"validators":{"minLength":{"value":8},"maxLength":{"value":50}}},
         },
         "additionalProperties": false,
     },
@@ -115,9 +115,9 @@ const models: TsoaRoute.Models = {
     "RegisterRequest": {
         "dataType": "refObject",
         "properties": {
-            "username": {"dataType":"string","required":true},
-            "email": {"dataType":"string","required":true},
-            "password": {"dataType":"string","required":true},
+            "username": {"dataType":"string","required":true,"validators":{"minLength":{"value":1},"maxLength":{"value":50}}},
+            "email": {"dataType":"string","required":true,"validators":{"minLength":{"value":3},"maxLength":{"value":50}}},
+            "password": {"dataType":"string","required":true,"validators":{"minLength":{"value":8},"maxLength":{"value":50}}},
         },
         "additionalProperties": false,
     },

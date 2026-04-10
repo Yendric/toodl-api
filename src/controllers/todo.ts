@@ -18,14 +18,36 @@ import {
 
 interface TodoCreateRequest {
   done?: boolean;
+  /**
+   * @minLength 1
+   * @maxLength 255
+   */
   subject: string;
   enableDeadline?: boolean | null;
+  /**
+   * @maxLength 255
+   */
   description?: string | null;
   isAllDay?: boolean | null;
+  /**
+   * @maxLength 255
+   */
   location?: string | null;
+  /**
+   * @maxLength 255
+   */
   recurrenceRule?: string | null;
+  /**
+   * @maxLength 255
+   */
   recurrenceException?: string | null;
+  /**
+   * @maxLength 255
+   */
   startTimezone?: string | null;
+  /**
+   * @maxLength 255
+   */
   endTimezone?: string | null;
   startTime?: string | Date;
   endTime?: string | Date | null;

@@ -18,13 +18,35 @@ import {
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 interface LoginRequest {
+  /**
+   * @minLength 3
+   * @maxLength 50
+   * @format email
+   */
   email: string;
+  /**
+   * @minLength 8
+   * @maxLength 50
+   */
   password: string;
 }
 
 interface RegisterRequest {
+  /**
+   * @minLength 1
+   * @maxLength 50
+   */
   username: string;
+  /**
+   * @minLength 3
+   * @maxLength 50
+   * @format email
+   */
   email: string;
+  /**
+   * @minLength 8
+   * @maxLength 50
+   */
   password: string;
 }
 

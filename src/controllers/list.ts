@@ -15,7 +15,14 @@ import {
 } from "tsoa";
 
 interface ListRequest {
+  /**
+   * @minLength 1
+   * @maxLength 20
+   */
   name: string;
+  /**
+   * @pattern ^#[0-9A-Fa-f]{6}$
+   */
   color: string;
 }
 

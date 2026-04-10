@@ -118,7 +118,9 @@
 						"type": "boolean"
 					},
 					"subject": {
-						"type": "string"
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 255
 					},
 					"enableDeadline": {
 						"type": "boolean",
@@ -126,7 +128,8 @@
 					},
 					"description": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"maxLength": 255
 					},
 					"isAllDay": {
 						"type": "boolean",
@@ -134,23 +137,28 @@
 					},
 					"location": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"maxLength": 255
 					},
 					"recurrenceRule": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"maxLength": 255
 					},
 					"recurrenceException": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"maxLength": 255
 					},
 					"startTimezone": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"maxLength": 255
 					},
 					"endTimezone": {
 						"type": "string",
-						"nullable": true
+						"nullable": true,
+						"maxLength": 255
 					},
 					"startTime": {
 						"anyOf": [
@@ -190,10 +198,13 @@
 			"ListRequest": {
 				"properties": {
 					"name": {
-						"type": "string"
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 20
 					},
 					"color": {
-						"type": "string"
+						"type": "string",
+						"pattern": "^#[0-9A-Fa-f]{6}$"
 					}
 				},
 				"required": [
@@ -218,10 +229,15 @@
 			"LoginRequest": {
 				"properties": {
 					"email": {
-						"type": "string"
+						"type": "string",
+						"format": "email",
+						"minLength": 3,
+						"maxLength": 50
 					},
 					"password": {
-						"type": "string"
+						"type": "string",
+						"minLength": 8,
+						"maxLength": 50
 					}
 				},
 				"required": [
@@ -234,13 +250,20 @@
 			"RegisterRequest": {
 				"properties": {
 					"username": {
-						"type": "string"
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 50
 					},
 					"email": {
-						"type": "string"
+						"type": "string",
+						"format": "email",
+						"minLength": 3,
+						"maxLength": 50
 					},
 					"password": {
-						"type": "string"
+						"type": "string",
+						"minLength": 8,
+						"maxLength": 50
 					}
 				},
 				"required": [
