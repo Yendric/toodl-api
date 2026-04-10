@@ -1,0 +1,14 @@
+{
+  "entryFile": "src/index.ts",
+  "noImplicitAdditionalProperties": "throw-on-extras",
+  "basePath": "/v1",
+  "controllerPathGlobs": ["src/controllers/**/*.ts"],
+  "spec": {
+    "outputDirectory": "src",
+    "specVersion": 3
+  },
+  "routes": {
+    "routesDir": "src",
+    "authenticationModule": "src/authentication.ts"
+  }
+}
