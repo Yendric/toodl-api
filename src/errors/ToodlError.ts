@@ -1,9 +1,10 @@
 export class ToodlError extends Error {
-  error: string;
+  public readonly status: number;
 
-  constructor(message: string, name: string) {
+  constructor(message: string, name: string = "ToodlError", status: number = 422) {
     super(message);
     this.name = name;
-    this.error = message;
+    this.status = status;
+    Object.setPrototypeOf(this, new.target.prototype);
   }
 }

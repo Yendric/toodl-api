@@ -12,7 +12,7 @@ function handleError(err: any, req: Request, res: Response, _next: NextFunction)
   } else if (err instanceof ZodError) {
     return res.status(422).json({ message: "Validation error", errors: err.errors });
   } else if (err instanceof ToodlError) {
-    return res.status(422).json({ message: err.message });
+    return res.status(err.status).json({ message: err.message });
   } else if (err.message === "Gelieve u eerst in te loggen" || err.status === 401) {
     return res.status(401).json({ message: err.message });
   } else {

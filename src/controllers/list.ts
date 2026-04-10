@@ -1,4 +1,4 @@
-import prisma from "@/prisma";
+import { ListService } from "@/services/ListService";
 import { getAuthenticatedUserId } from "@/utils/auth";
 import { Request as ExRequest } from "express";
 import {
@@ -33,15 +33,7 @@ export class ListController extends Controller {
   @Get("/")
   public async index(@Request() request: ExRequest): Promise<any[]> {
     const userId = getAuthenticatedUserId(request);
-
-    return await prisma.list.findMany({
-      where: {
-        userId,
-      },
-      orderBy: {
-        name: "asc",
-      },
-    });
+    return await ListService.listForUser(userId);
   }
 
   @Post("/")
@@ -50,13 +42,7 @@ export class ListController extends Controller {
     @Body() body: ListRequest,
   ): Promise<any> {
     const userId = getAuthenticatedUserId(request);
-
-    return await prisma.list.create({
-      data: {
-        ...body,
-        userId,
-      },
-    });
+    return await ListService.create(userId, body);
   }
 
   @Post("{listId}")
@@ -66,11 +52,7 @@ export class ListController extends Controller {
     @Body() body: ListRequest,
   ): Promise<any> {
     const userId = getAuthenticatedUserId(request);
-
-    return await prisma.list.update({
-      data: body,
-      where: { id: listId, userId },
-    });
+    return await ListService.update(userId, listId, body);
   }
 
   @Delete("{listId}")
@@ -79,9 +61,7 @@ export class ListController extends Controller {
     @Path() listId: number,
   ): Promise<boolean> {
     const userId = getAuthenticatedUserId(request);
-
-    await prisma.list.delete({ where: { id: listId, userId } });
-
+    await ListService.delete(userId, listId);
     return true;
   }
 }

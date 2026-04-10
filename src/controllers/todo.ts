@@ -1,7 +1,5 @@
-import { DataValidationError } from "@/errors/DataValidationError";
-import prisma from "@/prisma";
+import { TodoService } from "@/services/TodoService";
 import { getAuthenticatedUserId } from "@/utils/auth";
-import dayjs from "dayjs";
 import { Request as ExRequest } from "express";
 import {
   Body,
@@ -61,20 +59,7 @@ export class TodoController extends Controller {
   @Get("/")
   public async index(@Request() request: ExRequest): Promise<any[]> {
     const userId = getAuthenticatedUserId(request);
-
-    return await prisma.todo.findMany({
-      where: {
-        userId: userId,
-      },
-      orderBy: [
-        {
-          done: "asc",
-        },
-        {
-          startTime: "asc",
-        },
-      ],
-    });
+    return await TodoService.listForUser(userId);
   }
 
   @Post("/")
@@ -83,31 +68,7 @@ export class TodoController extends Controller {
     @Body() body: TodoCreateRequest,
   ): Promise<any> {
     const userId = getAuthenticatedUserId(request);
-
-    let { startTime, endTime, listId, ...rest } = body;
-    startTime = startTime ? new Date(startTime) : new Date();
-    endTime = endTime ? new Date(endTime) : dayjs(startTime).add(1, "hour").toDate();
-
-    // Voorkom dat een todo in iemand anders lijst wordt toegevoegd
-    if (listId) {
-      const list = await prisma.list.findFirst({
-        where: {
-          id: listId,
-          userId,
-        },
-      });
-      if (!list) throw new DataValidationError("Lijst niet gevonden.");
-    }
-
-    return await prisma.todo.create({
-      data: {
-        ...rest,
-        startTime,
-        endTime,
-        listId,
-        userId,
-      },
-    });
+    return await TodoService.create(userId, body);
   }
 
   @Post("{todoId}")
@@ -117,34 +78,7 @@ export class TodoController extends Controller {
     @Body() body: TodoCreateRequest,
   ): Promise<any> {
     const userId = getAuthenticatedUserId(request);
-
-    let { startTime, endTime, listId, ...rest } = body;
-    if (startTime) startTime = new Date(startTime);
-    if (endTime) endTime = new Date(endTime);
-
-    // Voorkom dat een todo in iemand anders lijst wordt toegevoegd
-    if (listId) {
-      const list = await prisma.list.findFirst({
-        where: {
-          id: listId,
-          userId,
-        },
-      });
-      if (!list) throw new DataValidationError("Lijst niet gevonden.");
-    }
-
-    return await prisma.todo.update({
-      data: {
-        ...rest,
-        startTime,
-        endTime,
-        listId,
-      },
-      where: {
-        id: todoId,
-        userId: userId,
-      },
-    });
+    return await TodoService.update(userId, todoId, body);
   }
 
   @Delete("{todoId}")
@@ -153,14 +87,7 @@ export class TodoController extends Controller {
     @Path() todoId: number,
   ): Promise<boolean> {
     const userId = getAuthenticatedUserId(request);
-
-    await prisma.todo.delete({
-      where: {
-        id: todoId,
-        userId,
-      },
-    });
-
+    await TodoService.delete(userId, todoId);
     return true;
   }
 }

@@ -1,7 +1,5 @@
-import removalMail from "@/mail/emails/removalMail";
-import prisma from "@/prisma";
+import { UserService } from "@/services/UserService";
 import { getAuthenticatedUser, getAuthenticatedUserId } from "@/utils/auth";
-import bcrypt from "bcryptjs";
 import { Request as ExRequest } from "express";
 import {
   Body,
@@ -95,17 +93,7 @@ export class UserController extends Controller {
     @Body() body: UserUpdateRequest,
   ): Promise<MessageResponse> {
     const userId = getAuthenticatedUserId(request);
-
-    await prisma.user.update({
-      where: {
-        id: userId,
-      },
-      data: {
-        ...body,
-        email: body.email.toLowerCase(),
-      },
-    });
-
+    await UserService.update(userId, body);
     return { message: "Gebruiker succesvol geüpdatet." };
   }
 
@@ -115,10 +103,7 @@ export class UserController extends Controller {
     @Res() successRes: TsoaResponse<200, MessageResponse>,
   ): Promise<void> {
     const user = getAuthenticatedUser(request);
-
-    await prisma.user.delete({ where: { id: user.id } });
-
-    removalMail(user);
+    await UserService.delete(user);
 
     return new Promise((resolve) => {
       request.session.destroy(() => {
@@ -138,46 +123,7 @@ export class UserController extends Controller {
     @Body() body: PasswordUpdateRequest,
   ): Promise<MessageResponse> {
     const user = getAuthenticatedUser(request);
-
-    if (!user.password) {
-      if (!body.newPassword || !body.confirmPassword) {
-        this.setStatus(400);
-        return { message: "Geef alle gegevens mee." };
-      }
-      if (body.newPassword != body.confirmPassword) {
-        this.setStatus(400);
-        return { message: "Wachtwoorden komen niet overeen." };
-      }
-
-      await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          password: await bcrypt.hash(body.newPassword, 10),
-        },
-      });
-
-      return { message: "Gebruiker succesvol geüpdatet." };
-    } else if (body.oldPassword) {
-      if (body.newPassword != body.confirmPassword) {
-        this.setStatus(400);
-        return { message: "Wachtwoordbevestiging incorrect." };
-      }
-      if (!(await bcrypt.compare(body.oldPassword, user.password))) {
-        this.setStatus(400);
-        return { message: "Geef je juiste wachtwoord mee." };
-      }
-
-      await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          password: await bcrypt.hash(body.newPassword, 10),
-        },
-      });
-
-      return { message: "Gebruiker succesvol geüpdatet." };
-    } else {
-      this.setStatus(400);
-      return { message: "Geef je juiste wachtwoord mee." };
-    }
+    await UserService.updatePassword(user, body);
+    return { message: "Gebruiker succesvol geüpdatet." };
   }
 }

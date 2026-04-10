@@ -1,10 +1,6 @@
-import welcomeMail from "@/mail/emails/welcomeMail";
-import prisma from "@/prisma";
-import { getUserByEmail } from "@/utils/database";
+import { AuthService } from "@/services/AuthService";
 import { error } from "@/utils/logging";
-import bcrypt from "bcryptjs";
 import { Request as ExRequest } from "express";
-import { OAuth2Client } from "google-auth-library";
 import {
   Body,
   Controller,
@@ -16,8 +12,6 @@ import {
   TsoaResponse,
   Tags,
 } from "tsoa";
-
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 interface LoginRequest {
   /**
@@ -68,16 +62,11 @@ export class AuthController extends Controller {
     @Request() request: ExRequest,
     @Body() body: LoginRequest,
   ): Promise<AuthResponse> {
-    const user = await getUserByEmail(body.email);
+    const user = await AuthService.login(body.email, body.password);
+    request.session.loggedIn = true;
+    request.session.userId = user.id;
 
-    if (user?.password && (await bcrypt.compare(body.password, user.password))) {
-      request.session.loggedIn = true;
-      request.session.userId = user.id;
-
-      return { message: "Succesvol ingelogd." };
-    }
-    this.setStatus(400);
-    return { message: "Incorrecte gegevens." };
+    return { message: "Succesvol ingelogd." };
   }
 
   @Post("register")
@@ -85,28 +74,10 @@ export class AuthController extends Controller {
     @Request() request: ExRequest,
     @Body() body: RegisterRequest,
   ): Promise<AuthResponse> {
-    const oldUser = await getUserByEmail(body.email);
-    if (oldUser) {
-      this.setStatus(409);
-      return { message: "E-mail is reeds geregistreerd." };
-    }
-
-    const passwordHash = await bcrypt.hash(body.password, 10);
-
-    const user = await prisma.user.create({
-      data: {
-        username: body.username,
-        email: body.email.toLowerCase(),
-        password: passwordHash,
-      },
-    });
-
+    const user = await AuthService.register(body.username, body.email, body.password);
     request.session.loggedIn = true;
     request.session.userId = user.id;
 
-    welcomeMail(user);
-
-    this.setStatus(201);
     return { message: "Succesvol geregistreerd." };
   }
 
@@ -138,26 +109,10 @@ export class AuthController extends Controller {
     @Request() request: ExRequest,
     @Body() body: GoogleLoginRequest,
   ): Promise<AuthResponse> {
-    const ticket = await client.verifyIdToken({
-      idToken: body.token,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-    const payload = ticket.getPayload();
-    if (!payload?.email || !payload.name) {
-      this.setStatus(500);
-      return { message: "Er is iets foutgegaan." };
-    }
-
-    let user = await getUserByEmail(payload.email);
-    if (!user) {
-      user = await prisma.user.create({ data: { email: payload.email, username: payload.name } });
-      welcomeMail(user);
-    }
-
+    const user = await AuthService.google(body.token);
     request.session.loggedIn = true;
     request.session.userId = user.id;
 
-    this.setStatus(201);
     return { message: "Google login/register succesvol." };
   }
 }
