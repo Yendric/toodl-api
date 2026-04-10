@@ -15,6 +15,11 @@ const API_VERSION = "v1";
 
 const app = express();
 
+const swaggerOptions = {
+  ...swaggerDocument,
+  servers: [{ url: `${process.env.CALLBACK_URI ?? "http://localhost:3001"}/${API_VERSION}` }],
+};
+
 const FileStore = SessionFileStore(session);
 const sessionMiddleware = session({
   store: new FileStore(),
@@ -31,7 +36,7 @@ app.use(cors({ origin: process.env.APP_URI?.split(","), credentials: true }));
 app.use(express.json());
 app.use(sessionMiddleware);
 
-app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerOptions));
 
 const v1Router = express.Router();
 RegisterRoutes(v1Router);
