@@ -46,9 +46,9 @@ const models: TsoaRoute.Models = {
     "UserUpdateRequest": {
         "dataType": "refObject",
         "properties": {
-            "email": {"dataType":"string","required":true},
-            "username": {"dataType":"string","required":true},
-            "icalUrls": {"dataType":"array","array":{"dataType":"string"},"required":true},
+            "email": {"dataType":"string","required":true,"validators":{"minLength":{"value":3},"maxLength":{"value":50}}},
+            "username": {"dataType":"string","required":true,"validators":{"minLength":{"value":1},"maxLength":{"value":50}}},
+            "icalUrls": {"dataType":"array","array":{"dataType":"string"},"required":true,"validators":{"maxItems":{"value":10}}},
             "dailyNotification": {"dataType":"boolean","required":true},
             "reminderNotification": {"dataType":"boolean","required":true},
             "nowNotification": {"dataType":"boolean","required":true},
@@ -59,9 +59,9 @@ const models: TsoaRoute.Models = {
     "PasswordUpdateRequest": {
         "dataType": "refObject",
         "properties": {
-            "newPassword": {"dataType":"string","required":true},
-            "confirmPassword": {"dataType":"string","required":true},
-            "oldPassword": {"dataType":"string"},
+            "newPassword": {"dataType":"string","required":true,"validators":{"minLength":{"value":8},"maxLength":{"value":50}}},
+            "confirmPassword": {"dataType":"string","required":true,"validators":{"minLength":{"value":8},"maxLength":{"value":50}}},
+            "oldPassword": {"dataType":"string","validators":{"minLength":{"value":8},"maxLength":{"value":50}}},
         },
         "additionalProperties": false,
     },
@@ -212,6 +212,7 @@ export function RegisterRoutes(app: Router) {
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsUserController_destroy: Record<string, TsoaRoute.ParameterSchema> = {
                 request: {"in":"request","name":"request","required":true,"dataType":"object"},
+                successRes: {"in":"res","name":"200","required":true,"ref":"MessageResponse"},
         };
         app.post('/auth/user_data/destroy',
             authenticateMiddleware([{"session":[]}]),
@@ -593,6 +594,8 @@ export function RegisterRoutes(app: Router) {
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsAuthController_logout: Record<string, TsoaRoute.ParameterSchema> = {
                 request: {"in":"request","name":"request","required":true,"dataType":"object"},
+                successRes: {"in":"res","name":"200","required":true,"ref":"AuthResponse"},
+                errorRes: {"in":"res","name":"500","required":true,"ref":"AuthResponse"},
         };
         app.get('/auth/logout',
             ...(fetchMiddlewares<RequestHandler>(AuthController)),

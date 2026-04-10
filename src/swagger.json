@@ -61,16 +61,22 @@
 			"UserUpdateRequest": {
 				"properties": {
 					"email": {
-						"type": "string"
+						"type": "string",
+						"format": "email",
+						"minLength": 3,
+						"maxLength": 50
 					},
 					"username": {
-						"type": "string"
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 50
 					},
 					"icalUrls": {
 						"items": {
 							"type": "string"
 						},
-						"type": "array"
+						"type": "array",
+						"maxItems": 10
 					},
 					"dailyNotification": {
 						"type": "boolean"
@@ -96,13 +102,19 @@
 			"PasswordUpdateRequest": {
 				"properties": {
 					"newPassword": {
-						"type": "string"
+						"type": "string",
+						"minLength": 8,
+						"maxLength": 50
 					},
 					"confirmPassword": {
-						"type": "string"
+						"type": "string",
+						"minLength": 8,
+						"maxLength": 50
 					},
 					"oldPassword": {
-						"type": "string"
+						"type": "string",
+						"minLength": 8,
+						"maxLength": 50
 					}
 				},
 				"required": [
@@ -366,7 +378,7 @@
 				"operationId": "Destroy",
 				"responses": {
 					"200": {
-						"description": "Ok",
+						"description": "",
 						"content": {
 							"application/json": {
 								"schema": {
@@ -374,6 +386,9 @@
 								}
 							}
 						}
+					},
+					"204": {
+						"description": "No content"
 					}
 				},
 				"tags": [
@@ -766,7 +781,20 @@
 				"operationId": "Logout",
 				"responses": {
 					"200": {
-						"description": "Ok",
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AuthResponse"
+								}
+							}
+						}
+					},
+					"204": {
+						"description": "No content"
+					},
+					"500": {
+						"description": "",
 						"content": {
 							"application/json": {
 								"schema": {

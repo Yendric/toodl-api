@@ -10,8 +10,10 @@ import {
   Get,
   Post,
   Request,
+  Res,
   Route,
   Security,
+  TsoaResponse,
   Tags,
 } from "tsoa";
 
@@ -26,8 +28,20 @@ interface UserInfoResponse {
 }
 
 interface UserUpdateRequest {
+  /**
+   * @minLength 3
+   * @maxLength 50
+   * @format email
+   */
   email: string;
+  /**
+   * @minLength 1
+   * @maxLength 50
+   */
   username: string;
+  /**
+   * @maxItems 10
+   */
   icalUrls: string[];
   dailyNotification: boolean;
   reminderNotification: boolean;
@@ -35,8 +49,20 @@ interface UserUpdateRequest {
 }
 
 interface PasswordUpdateRequest {
+  /**
+   * @minLength 8
+   * @maxLength 50
+   */
   newPassword: string;
+  /**
+   * @minLength 8
+   * @maxLength 50
+   */
   confirmPassword: string;
+  /**
+   * @minLength 8
+   * @maxLength 50
+   */
   oldPassword?: string;
 }
 
@@ -74,14 +100,20 @@ export class UserController extends Controller {
       where: {
         id: userId,
       },
-      data: body,
+      data: {
+        ...body,
+        email: body.email.toLowerCase(),
+      },
     });
 
     return { message: "Gebruiker succesvol geüpdatet." };
   }
 
   @Post("destroy")
-  public async destroy(@Request() request: ExRequest): Promise<MessageResponse> {
+  public async destroy(
+    @Request() request: ExRequest,
+    @Res() successRes: TsoaResponse<200, MessageResponse>,
+  ): Promise<void> {
     const user = getAuthenticatedUser(request);
 
     await prisma.user.delete({ where: { id: user.id } });
@@ -90,7 +122,12 @@ export class UserController extends Controller {
 
     return new Promise((resolve) => {
       request.session.destroy(() => {
-        resolve({ message: "Gebruiker succesvol verwijderd." });
+        this.setHeader(
+          "Set-Cookie",
+          "toodl_session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly",
+        );
+        successRes(200, { message: "Gebruiker succesvol verwijderd." });
+        resolve();
       });
     });
   }

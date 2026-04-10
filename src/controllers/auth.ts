@@ -11,7 +11,9 @@ import {
   Get,
   Post,
   Request,
+  Res,
   Route,
+  TsoaResponse,
   Tags,
 } from "tsoa";
 
@@ -109,17 +111,24 @@ export class AuthController extends Controller {
   }
 
   @Get("logout")
-  public async logout(@Request() request: ExRequest): Promise<AuthResponse> {
-    return new Promise((resolve, reject) => {
+  public async logout(
+    @Request() request: ExRequest,
+    @Res() successRes: TsoaResponse<200, AuthResponse>,
+    @Res() errorRes: TsoaResponse<500, AuthResponse>,
+  ): Promise<void> {
+    return new Promise((resolve) => {
       request.session.destroy((err) => {
         if (err) {
           error("Fout bij uitloggen: " + err);
-          this.setStatus(500);
-          return resolve({ message: "Er ging iets fout bij het uitloggen." });
+          errorRes(500, { message: "Er ging iets fout bij het uitloggen." });
+          return resolve();
         }
-        // Note: res.clearCookie is not directly available here without accessing res.
-        // We can inject @Res() if needed, but for now let's keep it simple.
-        resolve({ message: "Succesvol uitgelogd." });
+        this.setHeader(
+          "Set-Cookie",
+          "toodl_session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly",
+        );
+        successRes(200, { message: "Succesvol uitgelogd." });
+        resolve();
       });
     });
   }
