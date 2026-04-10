@@ -1,4 +1,4 @@
-import prisma from "@/prisma";
+import { IListService } from "@/services/ListService";
 import { getAuthenticatedUserId } from "@/utils/auth";
 import { Request as ExRequest } from "express";
 import {
@@ -30,18 +30,14 @@ interface ListRequest {
 @Tags("List")
 @Security("session")
 export class ListController extends Controller {
+  constructor(private listService: IListService) {
+    super();
+  }
+
   @Get("/")
   public async index(@Request() request: ExRequest): Promise<any[]> {
     const userId = getAuthenticatedUserId(request);
-
-    return await prisma.list.findMany({
-      where: {
-        userId,
-      },
-      orderBy: {
-        name: "asc",
-      },
-    });
+    return await this.listService.listForUser(userId);
   }
 
   @Post("/")
@@ -50,13 +46,7 @@ export class ListController extends Controller {
     @Body() body: ListRequest,
   ): Promise<any> {
     const userId = getAuthenticatedUserId(request);
-
-    return await prisma.list.create({
-      data: {
-        ...body,
-        userId,
-      },
-    });
+    return await this.listService.create(userId, body);
   }
 
   @Post("{listId}")
@@ -66,11 +56,7 @@ export class ListController extends Controller {
     @Body() body: ListRequest,
   ): Promise<any> {
     const userId = getAuthenticatedUserId(request);
-
-    return await prisma.list.update({
-      data: body,
-      where: { id: listId, userId },
-    });
+    return await this.listService.update(userId, listId, body);
   }
 
   @Delete("{listId}")
@@ -79,9 +65,7 @@ export class ListController extends Controller {
     @Path() listId: number,
   ): Promise<boolean> {
     const userId = getAuthenticatedUserId(request);
-
-    await prisma.list.delete({ where: { id: listId, userId } });
-
+    await this.listService.delete(userId, listId);
     return true;
   }
 }
