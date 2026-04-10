@@ -1,4 +1,4 @@
-import { UserService } from "@/services/UserService";
+import { IUserService } from "@/services/UserService";
 import { getAuthenticatedUser, getAuthenticatedUserId } from "@/utils/auth";
 import { Request as ExRequest } from "express";
 import {
@@ -72,6 +72,10 @@ interface MessageResponse {
 @Tags("User")
 @Security("session")
 export class UserController extends Controller {
+  constructor(private userService: IUserService) {
+    super();
+  }
+
   @Get("/")
   public async info(@Request() request: ExRequest): Promise<UserInfoResponse> {
     const user = getAuthenticatedUser(request);
@@ -93,7 +97,7 @@ export class UserController extends Controller {
     @Body() body: UserUpdateRequest,
   ): Promise<MessageResponse> {
     const userId = getAuthenticatedUserId(request);
-    await UserService.update(userId, body);
+    await this.userService.update(userId, body);
     return { message: "Gebruiker succesvol geüpdatet." };
   }
 
@@ -103,7 +107,7 @@ export class UserController extends Controller {
     @Res() successRes: TsoaResponse<200, MessageResponse>,
   ): Promise<void> {
     const user = getAuthenticatedUser(request);
-    await UserService.delete(user);
+    await this.userService.delete(user);
 
     return new Promise((resolve) => {
       request.session.destroy(() => {
@@ -123,7 +127,7 @@ export class UserController extends Controller {
     @Body() body: PasswordUpdateRequest,
   ): Promise<MessageResponse> {
     const user = getAuthenticatedUser(request);
-    await UserService.updatePassword(user, body);
+    await this.userService.updatePassword(user, body);
     return { message: "Gebruiker succesvol geüpdatet." };
   }
 }

@@ -13,6 +13,8 @@ import { ListController } from './controllers/list';
 import { AuthController } from './controllers/auth';
 import { expressAuthentication } from './authentication';
 // @ts-ignore - no great way to install types from subpackage
+import { iocContainer } from './ioc';
+import type { IocContainer, IocContainerFactory } from '@tsoa/runtime';
 import type { Request as ExRequest, Response as ExResponse, RequestHandler, Router } from 'express';
 
 const expressAuthenticationRecasted = expressAuthentication as (req: ExRequest, securityName: string, scopes?: string[], res?: ExResponse) => Promise<any>;
@@ -163,7 +165,12 @@ export function RegisterRoutes(app: Router) {
             try {
                 validatedArgs = templateService.getValidatedArgs({ args: argsUserController_info, request, response });
 
-                const controller = new UserController();
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<UserController>(UserController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
 
               await templateService.apiHandler({
                 methodName: 'info',
@@ -195,7 +202,12 @@ export function RegisterRoutes(app: Router) {
             try {
                 validatedArgs = templateService.getValidatedArgs({ args: argsUserController_update, request, response });
 
-                const controller = new UserController();
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<UserController>(UserController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
 
               await templateService.apiHandler({
                 methodName: 'update',
@@ -227,7 +239,12 @@ export function RegisterRoutes(app: Router) {
             try {
                 validatedArgs = templateService.getValidatedArgs({ args: argsUserController_destroy, request, response });
 
-                const controller = new UserController();
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<UserController>(UserController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
 
               await templateService.apiHandler({
                 methodName: 'destroy',
@@ -259,7 +276,12 @@ export function RegisterRoutes(app: Router) {
             try {
                 validatedArgs = templateService.getValidatedArgs({ args: argsUserController_updatePassword, request, response });
 
-                const controller = new UserController();
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<UserController>(UserController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
 
               await templateService.apiHandler({
                 methodName: 'updatePassword',
@@ -290,7 +312,12 @@ export function RegisterRoutes(app: Router) {
             try {
                 validatedArgs = templateService.getValidatedArgs({ args: argsTodoController_index, request, response });
 
-                const controller = new TodoController();
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<TodoController>(TodoController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
 
               await templateService.apiHandler({
                 methodName: 'index',
@@ -322,7 +349,12 @@ export function RegisterRoutes(app: Router) {
             try {
                 validatedArgs = templateService.getValidatedArgs({ args: argsTodoController_store, request, response });
 
-                const controller = new TodoController();
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<TodoController>(TodoController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
 
               await templateService.apiHandler({
                 methodName: 'store',
@@ -355,7 +387,12 @@ export function RegisterRoutes(app: Router) {
             try {
                 validatedArgs = templateService.getValidatedArgs({ args: argsTodoController_update, request, response });
 
-                const controller = new TodoController();
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<TodoController>(TodoController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
 
               await templateService.apiHandler({
                 methodName: 'update',
@@ -387,7 +424,12 @@ export function RegisterRoutes(app: Router) {
             try {
                 validatedArgs = templateService.getValidatedArgs({ args: argsTodoController_destroy, request, response });
 
-                const controller = new TodoController();
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<TodoController>(TodoController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
 
               await templateService.apiHandler({
                 methodName: 'destroy',
@@ -418,7 +460,12 @@ export function RegisterRoutes(app: Router) {
             try {
                 validatedArgs = templateService.getValidatedArgs({ args: argsListController_index, request, response });
 
-                const controller = new ListController();
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<ListController>(ListController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
 
               await templateService.apiHandler({
                 methodName: 'index',
@@ -450,7 +497,12 @@ export function RegisterRoutes(app: Router) {
             try {
                 validatedArgs = templateService.getValidatedArgs({ args: argsListController_store, request, response });
 
-                const controller = new ListController();
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<ListController>(ListController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
 
               await templateService.apiHandler({
                 methodName: 'store',
@@ -483,7 +535,12 @@ export function RegisterRoutes(app: Router) {
             try {
                 validatedArgs = templateService.getValidatedArgs({ args: argsListController_update, request, response });
 
-                const controller = new ListController();
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<ListController>(ListController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
 
               await templateService.apiHandler({
                 methodName: 'update',
@@ -515,7 +572,12 @@ export function RegisterRoutes(app: Router) {
             try {
                 validatedArgs = templateService.getValidatedArgs({ args: argsListController_destroy, request, response });
 
-                const controller = new ListController();
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<ListController>(ListController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
 
               await templateService.apiHandler({
                 methodName: 'destroy',
@@ -546,7 +608,12 @@ export function RegisterRoutes(app: Router) {
             try {
                 validatedArgs = templateService.getValidatedArgs({ args: argsAuthController_login, request, response });
 
-                const controller = new AuthController();
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<AuthController>(AuthController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
 
               await templateService.apiHandler({
                 methodName: 'login',
@@ -577,7 +644,12 @@ export function RegisterRoutes(app: Router) {
             try {
                 validatedArgs = templateService.getValidatedArgs({ args: argsAuthController_register, request, response });
 
-                const controller = new AuthController();
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<AuthController>(AuthController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
 
               await templateService.apiHandler({
                 methodName: 'register',
@@ -609,7 +681,12 @@ export function RegisterRoutes(app: Router) {
             try {
                 validatedArgs = templateService.getValidatedArgs({ args: argsAuthController_logout, request, response });
 
-                const controller = new AuthController();
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<AuthController>(AuthController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
 
               await templateService.apiHandler({
                 methodName: 'logout',
@@ -640,7 +717,12 @@ export function RegisterRoutes(app: Router) {
             try {
                 validatedArgs = templateService.getValidatedArgs({ args: argsAuthController_google, request, response });
 
-                const controller = new AuthController();
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<AuthController>(AuthController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
 
               await templateService.apiHandler({
                 methodName: 'google',

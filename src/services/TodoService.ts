@@ -2,16 +2,24 @@ import prisma from "@/prisma";
 import { DataValidationError } from "@/errors/DataValidationError";
 import { DatabaseLimitError } from "@/errors/DatabaseLimitError";
 import dayjs from "dayjs";
+import { Todo } from "@prisma/client";
 
-export class TodoService {
-  public static async listForUser(userId: number) {
+export interface ITodoService {
+  listForUser(userId: number): Promise<Todo[]>;
+  create(userId: number, data: any): Promise<Todo>;
+  update(userId: number, todoId: number, data: any): Promise<Todo>;
+  delete(userId: number, todoId: number): Promise<Todo>;
+}
+
+export class TodoService implements ITodoService {
+  public async listForUser(userId: number): Promise<Todo[]> {
     return await prisma.todo.findMany({
       where: { userId },
       orderBy: [{ done: "asc" }, { startTime: "asc" }],
     });
   }
 
-  public static async create(userId: number, data: any) {
+  public async create(userId: number, data: any): Promise<Todo> {
     let { startTime, endTime, listId, ...rest } = data;
     startTime = startTime ? new Date(startTime) : new Date();
     endTime = endTime ? new Date(endTime) : dayjs(startTime).add(1, "hour").toDate();
@@ -41,7 +49,7 @@ export class TodoService {
     });
   }
 
-  public static async update(userId: number, todoId: number, data: any) {
+  public async update(userId: number, todoId: number, data: any): Promise<Todo> {
     let { startTime, endTime, listId, ...rest } = data;
     if (startTime) startTime = new Date(startTime);
     if (endTime) endTime = new Date(endTime);
@@ -67,7 +75,7 @@ export class TodoService {
     });
   }
 
-  public static async delete(userId: number, todoId: number) {
+  public async delete(userId: number, todoId: number): Promise<Todo> {
     return await prisma.todo.delete({
       where: {
         id: todoId,

@@ -1,4 +1,4 @@
-import { TodoService } from "@/services/TodoService";
+import { ITodoService } from "@/services/TodoService";
 import { getAuthenticatedUserId } from "@/utils/auth";
 import { Request as ExRequest } from "express";
 import {
@@ -56,10 +56,14 @@ interface TodoCreateRequest {
 @Tags("Todo")
 @Security("session")
 export class TodoController extends Controller {
+  constructor(private todoService: ITodoService) {
+    super();
+  }
+
   @Get("/")
   public async index(@Request() request: ExRequest): Promise<any[]> {
     const userId = getAuthenticatedUserId(request);
-    return await TodoService.listForUser(userId);
+    return await this.todoService.listForUser(userId);
   }
 
   @Post("/")
@@ -68,7 +72,7 @@ export class TodoController extends Controller {
     @Body() body: TodoCreateRequest,
   ): Promise<any> {
     const userId = getAuthenticatedUserId(request);
-    return await TodoService.create(userId, body);
+    return await this.todoService.create(userId, body);
   }
 
   @Post("{todoId}")
@@ -78,7 +82,7 @@ export class TodoController extends Controller {
     @Body() body: TodoCreateRequest,
   ): Promise<any> {
     const userId = getAuthenticatedUserId(request);
-    return await TodoService.update(userId, todoId, body);
+    return await this.todoService.update(userId, todoId, body);
   }
 
   @Delete("{todoId}")
@@ -87,7 +91,7 @@ export class TodoController extends Controller {
     @Path() todoId: number,
   ): Promise<boolean> {
     const userId = getAuthenticatedUserId(request);
-    await TodoService.delete(userId, todoId);
+    await this.todoService.delete(userId, todoId);
     return true;
   }
 }

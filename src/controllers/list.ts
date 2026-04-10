@@ -1,4 +1,4 @@
-import { ListService } from "@/services/ListService";
+import { IListService } from "@/services/ListService";
 import { getAuthenticatedUserId } from "@/utils/auth";
 import { Request as ExRequest } from "express";
 import {
@@ -30,10 +30,14 @@ interface ListRequest {
 @Tags("List")
 @Security("session")
 export class ListController extends Controller {
+  constructor(private listService: IListService) {
+    super();
+  }
+
   @Get("/")
   public async index(@Request() request: ExRequest): Promise<any[]> {
     const userId = getAuthenticatedUserId(request);
-    return await ListService.listForUser(userId);
+    return await this.listService.listForUser(userId);
   }
 
   @Post("/")
@@ -42,7 +46,7 @@ export class ListController extends Controller {
     @Body() body: ListRequest,
   ): Promise<any> {
     const userId = getAuthenticatedUserId(request);
-    return await ListService.create(userId, body);
+    return await this.listService.create(userId, body);
   }
 
   @Post("{listId}")
@@ -52,7 +56,7 @@ export class ListController extends Controller {
     @Body() body: ListRequest,
   ): Promise<any> {
     const userId = getAuthenticatedUserId(request);
-    return await ListService.update(userId, listId, body);
+    return await this.listService.update(userId, listId, body);
   }
 
   @Delete("{listId}")
@@ -61,7 +65,7 @@ export class ListController extends Controller {
     @Path() listId: number,
   ): Promise<boolean> {
     const userId = getAuthenticatedUserId(request);
-    await ListService.delete(userId, listId);
+    await this.listService.delete(userId, listId);
     return true;
   }
 }

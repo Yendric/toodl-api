@@ -5,8 +5,15 @@ import bcrypt from "bcryptjs";
 import { ToodlError } from "@/errors/ToodlError";
 import { User } from "@prisma/client";
 
-export class UserService {
-  public static async createDefaults(userId: number) {
+export interface IUserService {
+  createDefaults(userId: number): Promise<void>;
+  update(userId: number, data: any): Promise<User>;
+  delete(user: User): Promise<void>;
+  updatePassword(user: User, data: any): Promise<void>;
+}
+
+export class UserService implements IUserService {
+  public async createDefaults(userId: number): Promise<void> {
     const boodschappen = await prisma.list.create({
       data: {
         userId,
@@ -53,7 +60,7 @@ export class UserService {
     });
   }
 
-  public static async update(userId: number, data: any) {
+  public async update(userId: number, data: any): Promise<User> {
     return await prisma.user.update({
       where: {
         id: userId,
@@ -65,12 +72,12 @@ export class UserService {
     });
   }
 
-  public static async delete(user: User) {
+  public async delete(user: User): Promise<void> {
     await prisma.user.delete({ where: { id: user.id } });
     removalMail(user);
   }
 
-  public static async updatePassword(user: User, data: any) {
+  public async updatePassword(user: User, data: any): Promise<void> {
     const { newPassword, confirmPassword, oldPassword } = data;
 
     if (newPassword !== confirmPassword) {

@@ -4,12 +4,21 @@ import { getUserByEmail } from "@/utils/database";
 import bcrypt from "bcryptjs";
 import { OAuth2Client } from "google-auth-library";
 import { ToodlError } from "@/errors/ToodlError";
-import { UserService } from "./UserService";
+import { IUserService } from "./UserService";
+import { User } from "@prisma/client";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-export class AuthService {
-  public static async register(username: string, email: string, password: string) {
+export interface IAuthService {
+  register(username: string, email: string, password: string): Promise<User>;
+  login(email: string, password: string): Promise<User>;
+  google(token: string): Promise<User>;
+}
+
+export class AuthService implements IAuthService {
+  constructor(private userService: IUserService) {}
+
+  public async register(username: string, email: string, password: string): Promise<User> {
     const oldUser = await getUserByEmail(email);
     if (oldUser) {
       throw new ToodlError("E-mail is reeds geregistreerd.", "ConflictError", 409);
@@ -25,22 +34,22 @@ export class AuthService {
       },
     });
 
-    await UserService.createDefaults(user.id);
+    await this.userService.createDefaults(user.id);
     welcomeMail(user);
     return user;
   }
 
-  public static async login(email: string, password: string) {
+  public async login(email: string, password: string): Promise<User> {
     const user = await getUserByEmail(email);
 
     if (user?.password && (await bcrypt.compare(password, user.password))) {
       return user;
     }
-    
+
     throw new ToodlError("Incorrecte gegevens.", "UnauthorizedError", 400);
   }
 
-  public static async google(token: string) {
+  public async google(token: string): Promise<User> {
     const ticket = await client.verifyIdToken({
       idToken: token,
       audience: process.env.GOOGLE_CLIENT_ID,
@@ -53,7 +62,7 @@ export class AuthService {
     let user = await getUserByEmail(payload.email);
     if (!user) {
       user = await prisma.user.create({ data: { email: payload.email, username: payload.name } });
-      await UserService.createDefaults(user.id);
+      await this.userService.createDefaults(user.id);
       welcomeMail(user);
     }
 

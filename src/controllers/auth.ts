@@ -1,4 +1,4 @@
-import { AuthService } from "@/services/AuthService";
+import { IAuthService } from "@/services/AuthService";
 import { error } from "@/utils/logging";
 import { Request as ExRequest } from "express";
 import {
@@ -57,12 +57,16 @@ interface AuthResponse {
 @Route("auth")
 @Tags("Auth")
 export class AuthController extends Controller {
+  constructor(private authService: IAuthService) {
+    super();
+  }
+
   @Post("login")
   public async login(
     @Request() request: ExRequest,
     @Body() body: LoginRequest,
   ): Promise<AuthResponse> {
-    const user = await AuthService.login(body.email, body.password);
+    const user = await this.authService.login(body.email, body.password);
     request.session.loggedIn = true;
     request.session.userId = user.id;
 
@@ -74,7 +78,7 @@ export class AuthController extends Controller {
     @Request() request: ExRequest,
     @Body() body: RegisterRequest,
   ): Promise<AuthResponse> {
-    const user = await AuthService.register(body.username, body.email, body.password);
+    const user = await this.authService.register(body.username, body.email, body.password);
     request.session.loggedIn = true;
     request.session.userId = user.id;
 
@@ -109,7 +113,7 @@ export class AuthController extends Controller {
     @Request() request: ExRequest,
     @Body() body: GoogleLoginRequest,
   ): Promise<AuthResponse> {
-    const user = await AuthService.google(body.token);
+    const user = await this.authService.google(body.token);
     request.session.loggedIn = true;
     request.session.userId = user.id;
 
