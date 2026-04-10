@@ -13,8 +13,11 @@ jest.mock("@/prisma", () => ({
 }));
 
 describe("ListService", () => {
+  let listService: ListService;
+
   beforeEach(() => {
     jest.clearAllMocks();
+    listService = new ListService();
   });
 
   describe("create", () => {
@@ -22,7 +25,7 @@ describe("ListService", () => {
       (prisma.list.count as jest.Mock).mockResolvedValue(5);
       (prisma.list.create as jest.Mock).mockResolvedValue({ id: 1, name: "Test List" });
 
-      const result = await ListService.create(1, { name: "Test List", color: "#ffffff" });
+      const result = await listService.create(1, { name: "Test List", color: "#ffffff" });
 
       expect(prisma.list.count).toHaveBeenCalled();
       expect(prisma.list.create).toHaveBeenCalled();
@@ -32,7 +35,7 @@ describe("ListService", () => {
     it("should throw error if at max limit", async () => {
       (prisma.list.count as jest.Mock).mockResolvedValue(10);
 
-      await expect(ListService.create(1, { name: "Too many", color: "#000" }))
+      await expect(listService.create(1, { name: "Too many", color: "#000" }))
         .rejects.toThrow(DatabaseLimitError);
     });
   });
@@ -42,7 +45,7 @@ describe("ListService", () => {
       (prisma.list.count as jest.Mock).mockResolvedValue(2);
       (prisma.list.delete as jest.Mock).mockResolvedValue({ id: 1 });
 
-      await ListService.delete(1, 1);
+      await listService.delete(1, 1);
 
       expect(prisma.list.delete).toHaveBeenCalled();
     });
@@ -50,7 +53,7 @@ describe("ListService", () => {
     it("should throw error if only one list remains", async () => {
       (prisma.list.count as jest.Mock).mockResolvedValue(1);
 
-      await expect(ListService.delete(1, 1))
+      await expect(listService.delete(1, 1))
         .rejects.toThrow(DatabaseLimitError);
     });
   });

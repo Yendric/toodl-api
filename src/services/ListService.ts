@@ -1,15 +1,23 @@
 import prisma from "@/prisma";
 import { DatabaseLimitError } from "@/errors/DatabaseLimitError";
+import { List } from "@prisma/client";
 
-export class ListService {
-  public static async listForUser(userId: number) {
+export interface IListService {
+  listForUser(userId: number): Promise<List[]>;
+  create(userId: number, data: any): Promise<List>;
+  update(userId: number, listId: number, data: any): Promise<List>;
+  delete(userId: number, listId: number): Promise<List>;
+}
+
+export class ListService implements IListService {
+  public async listForUser(userId: number): Promise<List[]> {
     return await prisma.list.findMany({
       where: { userId },
       orderBy: { name: "asc" },
     });
   }
 
-  public static async create(userId: number, data: any) {
+  public async create(userId: number, data: any): Promise<List> {
     const amount = await prisma.list.count({
       where: { userId },
     });
@@ -25,14 +33,14 @@ export class ListService {
     });
   }
 
-  public static async update(userId: number, listId: number, data: any) {
+  public async update(userId: number, listId: number, data: any): Promise<List> {
     return await prisma.list.update({
       data,
       where: { id: listId, userId },
     });
   }
 
-  public static async delete(userId: number, listId: number) {
+  public async delete(userId: number, listId: number): Promise<List> {
     const amount = await prisma.list.count({
       where: { userId },
     });
