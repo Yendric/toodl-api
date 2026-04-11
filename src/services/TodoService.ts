@@ -16,6 +16,7 @@ export type TodoCreateData = Partial<
 
 export interface ITodoService {
   listForUser(userId: number, storeId?: number): Promise<Todo[]>;
+  listByList(userId: number, listId: number, storeId?: number): Promise<Todo[]>;
   create(userId: number, data: TodoCreateData): Promise<Todo>;
   update(userId: number, todoId: number, data: Partial<TodoCreateData>): Promise<Todo>;
   delete(userId: number, todoId: number): Promise<Todo>;
@@ -28,30 +29,43 @@ export class TodoService implements ITodoService {
       orderBy: [{ done: "asc" }, { position: "asc" }, { startTime: "asc" }],
     });
 
-    if (storeId) {
-      const orders = await prisma.storeCategoryOrder.findMany({
-        where: { storeId },
-      });
+    return this.applyStoreSorting(todos, storeId);
+  }
 
-      const orderMap = new Map<number, number>(orders.map((o) => [o.categoryId, o.position]));
+  public async listByList(userId: number, listId: number, storeId?: number): Promise<Todo[]> {
+    const todos = await prisma.todo.findMany({
+      where: { userId, listId },
+      orderBy: [{ done: "asc" }, { position: "asc" }, { startTime: "asc" }],
+    });
 
-      return todos.sort((a, b) => {
-        if (a.done !== b.done) return a.done ? 1 : -1;
+    return this.applyStoreSorting(todos, storeId);
+  }
 
-        const orderA = a.categoryId !== null ? orderMap.get(a.categoryId) ?? Infinity : Infinity;
-        const orderB = b.categoryId !== null ? orderMap.get(b.categoryId) ?? Infinity : Infinity;
-
-        if (orderA !== orderB) {
-          if (orderA === Infinity) return 1;
-          if (orderB === Infinity) return -1;
-          return orderA - orderB;
-        }
-
-        return a.position.localeCompare(b.position);
-      });
+  private async applyStoreSorting(todos: Todo[], storeId?: number): Promise<Todo[]> {
+    if (!storeId) {
+      return todos;
     }
 
-    return todos;
+    const orders = await prisma.storeCategoryOrder.findMany({
+      where: { storeId },
+    });
+
+    const orderMap = new Map<number, number>(orders.map((o) => [o.categoryId, o.position]));
+
+    return todos.sort((a, b) => {
+      if (a.done !== b.done) return a.done ? 1 : -1;
+
+      const orderA = a.categoryId !== null ? orderMap.get(a.categoryId) ?? Infinity : Infinity;
+      const orderB = b.categoryId !== null ? orderMap.get(b.categoryId) ?? Infinity : Infinity;
+
+      if (orderA !== orderB) {
+        if (orderA === Infinity) return 1;
+        if (orderB === Infinity) return -1;
+        return orderA - orderB;
+      }
+
+      return a.position.localeCompare(b.position);
+    });
   }
 
   public async create(userId: number, data: TodoCreateData): Promise<Todo> {

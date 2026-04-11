@@ -76,10 +76,23 @@ export class TodoController extends Controller {
     super();
   }
 
+  /**
+   * @deprecated Use /todos/list/{listId} instead
+   */
   @Get("/")
   public async index(@Request() request: ExRequest, @Query() storeId?: number): Promise<TodoResponse[]> {
     const userId = getAuthenticatedUserId(request);
     return await this.todoService.listForUser(userId, storeId);
+  }
+
+  @Get("list/{listId}")
+  public async getByList(
+    @Request() request: ExRequest,
+    @Path() listId: number,
+    @Query() storeId?: number,
+  ): Promise<TodoResponse[]> {
+    const userId = getAuthenticatedUserId(request);
+    return await this.todoService.listByList(userId, listId, storeId);
   }
 
   @Post("/")
