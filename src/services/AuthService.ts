@@ -26,15 +26,12 @@ export class AuthService implements IAuthService {
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    const user = await prisma.user.create({
-      data: {
-        username,
-        email: email.toLowerCase(),
-        password: passwordHash,
-      },
+    const user = await this.userService.createUserWithDefaults({
+      username,
+      email: email.toLowerCase(),
+      password: passwordHash,
     });
 
-    await this.userService.createDefaults(user.id);
     welcomeMail(user);
     return user;
   }
@@ -61,9 +58,9 @@ export class AuthService implements IAuthService {
 
     let user = await getUserByEmail(payload.email);
     if (!user) {
-      user = await prisma.user.create({ data: { email: payload.email.toLowerCase(), username: payload.name } });
-      await this.userService.createDefaults(user.id);
-      welcomeMail(user);
+      const newUser = await this.userService.createUserWithDefaults({ email: payload.email.toLowerCase(), username: payload.name });
+      welcomeMail(newUser);
+      return newUser;
     }
 
     return user;

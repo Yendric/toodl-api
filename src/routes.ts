@@ -170,7 +170,7 @@ const models: TsoaRoute.Models = {
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 };
-const templateService = new ExpressTemplateService(models, {"noImplicitAdditionalProperties":"throw-on-extras","bodyCoercion":true});
+const templateService = new ExpressTemplateService(models, {"noImplicitAdditionalProperties":"silently-remove-extras","bodyCoercion":true});
 
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
@@ -262,6 +262,7 @@ export function RegisterRoutes(app: Router) {
         const argsUserController_destroy: Record<string, TsoaRoute.ParameterSchema> = {
                 request: {"in":"request","name":"request","required":true,"dataType":"object"},
                 successRes: {"in":"res","name":"200","required":true,"ref":"MessageResponse"},
+                errorRes: {"in":"res","name":"500","required":true,"ref":"MessageResponse"},
         };
         app.post('/auth/user_data/destroy',
             authenticateMiddleware([{"session":[]}]),

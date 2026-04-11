@@ -3,7 +3,7 @@ import removalMail from "@/mail/emails/removalMail";
 import prisma from "@/prisma";
 import bcrypt from "bcryptjs";
 import { ToodlError } from "@/errors/ToodlError";
-import { User } from "@prisma/client";
+import { User, Prisma } from "@prisma/client";
 
 export interface UserUpdateData {
   email?: string;
@@ -21,57 +21,63 @@ export interface PasswordUpdateData {
 }
 
 export interface IUserService {
-  createDefaults(userId: number): Promise<void>;
+  createUserWithDefaults(data: Prisma.UserCreateInput): Promise<User>;
   update(userId: number, data: UserUpdateData): Promise<User>;
   delete(user: User): Promise<void>;
   updatePassword(user: User, data: PasswordUpdateData): Promise<void>;
 }
 
 export class UserService implements IUserService {
-  public async createDefaults(userId: number): Promise<void> {
-    const boodschappen = await prisma.list.create({
-      data: {
-        userId,
-        name: "Boodschappen",
-        color: "#33AAFF",
-      },
-    });
+  public async createUserWithDefaults(data: Prisma.UserCreateInput): Promise<User> {
+    return await prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({ data });
 
-    await prisma.todo.create({
-      data: {
-        userId,
-        listId: boodschappen.id,
-        subject: "Klik op de checkbox om de todo als klaar te markeren",
-      },
-    });
+      const boodschappen = await tx.list.create({
+        data: {
+          userId: user.id,
+          name: "Boodschappen",
+          color: "#33AAFF",
+        },
+      });
 
-    await prisma.todo.create({
-      data: {
-        userId,
-        listId: boodschappen.id,
-        startTime: new Date(),
-        endTime: dayjs(new Date()).add(1, "hour").toDate(),
-        subject: "Maak extra lijstjes met behulp van de linker zijbalk",
-      },
-    });
+      await tx.todo.create({
+        data: {
+          userId: user.id,
+          listId: boodschappen.id,
+          subject: "Klik op de checkbox om de todo als klaar te markeren",
+        },
+      });
 
-    const planning = await prisma.list.create({
-      data: {
-        userId,
-        name: "Planning",
-        color: "#FF0000",
-      },
-    });
+      await tx.todo.create({
+        data: {
+          userId: user.id,
+          listId: boodschappen.id,
+          startTime: new Date(),
+          endTime: dayjs(new Date()).add(1, "hour").toDate(),
+          subject: "Maak extra lijstjes met behulp van de linker zijbalk",
+        },
+      });
 
-    await prisma.todo.create({
-      data: {
-        userId,
-        listId: planning.id,
-        startTime: new Date(),
-        enableDeadline: true,
-        endTime: dayjs(new Date()).add(1, "hour").toDate(),
-        subject: "Maak todos met datum & tijd en bekijk ze in de planningweergave bovenaan",
-      },
+      const planning = await tx.list.create({
+        data: {
+          userId: user.id,
+          name: "Planning",
+          color: "#FF0000",
+        },
+      });
+
+      await tx.todo.create({
+        data: {
+          userId: user.id,
+          listId: planning.id,
+          startTime: new Date(),
+          enableDeadline: true,
+          endTime: dayjs(new Date()).add(1, "hour").toDate(),
+          subject: "Maak todos met datum & tijd en bekijk ze in de planningweergave bovenaan",
+        },
+      });
+
+      return user;
     });
   }
 

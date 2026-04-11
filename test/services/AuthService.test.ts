@@ -31,7 +31,7 @@ describe("AuthService", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUserService = {
-      createDefaults: jest.fn().mockResolvedValue(undefined),
+      createUserWithDefaults: jest.fn().mockImplementation((data) => Promise.resolve({ id: 1, ...data })),
       update: jest.fn(),
       delete: jest.fn(),
       updatePassword: jest.fn(),
@@ -44,14 +44,16 @@ describe("AuthService", () => {
       const userData = { username: "testuser", email: "test@example.com", password: "password123" };
       (getUserByEmail as jest.Mock).mockResolvedValue(null);
       (bcrypt.hash as jest.Mock).mockResolvedValue("hashedPassword");
-      (prisma.user.create as jest.Mock).mockResolvedValue({ id: 1, ...userData });
 
       const result = await authService.register(userData.username, userData.email, userData.password);
 
       expect(getUserByEmail).toHaveBeenCalledWith(userData.email);
       expect(bcrypt.hash).toHaveBeenCalledWith(userData.password, 10);
-      expect(prisma.user.create).toHaveBeenCalled();
-      expect(mockUserService.createDefaults).toHaveBeenCalledWith(1);
+      expect(mockUserService.createUserWithDefaults).toHaveBeenCalledWith({
+        username: userData.username,
+        email: userData.email,
+        password: "hashedPassword",
+      });
       expect(welcomeMail).toHaveBeenCalled();
       expect(result.id).toBe(1);
     });

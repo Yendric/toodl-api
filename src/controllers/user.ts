@@ -104,12 +104,17 @@ export class UserController extends Controller {
   public async destroy(
     @Request() request: ExRequest,
     @Res() successRes: TsoaResponse<200, MessageResponse>,
+    @Res() errorRes: TsoaResponse<500, MessageResponse>,
   ): Promise<void> {
     const user = getAuthenticatedUser(request);
     await this.userService.delete(user);
 
     return new Promise((resolve) => {
-      request.session.destroy(() => {
+      request.session.destroy((err) => {
+        if (err) {
+          errorRes(500, { message: "Er is iets foutgegaan." });
+          return resolve();
+        }
         this.setHeader(
           "Set-Cookie",
           "toodl_session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly",
