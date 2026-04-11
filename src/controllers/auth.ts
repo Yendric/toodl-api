@@ -1,17 +1,7 @@
-import { IAuthService } from "@/services/AuthService";
-import { error } from "@/utils/logging";
-import { Request as ExRequest } from "express";
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Request,
-  Res,
-  Route,
-  TsoaResponse,
-  Tags,
-} from "tsoa";
+import { type IAuthService } from "#/services/AuthService.js";
+import { error } from "#/utils/logging.js";
+import { type Request as ExRequest } from "express";
+import { Body, Controller, Get, Post, Request, Res, Route, Tags, type TsoaResponse } from "tsoa";
 
 interface LoginRequest {
   /**
@@ -62,10 +52,7 @@ export class AuthController extends Controller {
   }
 
   @Post("login")
-  public async login(
-    @Request() request: ExRequest,
-    @Body() body: LoginRequest,
-  ): Promise<AuthResponse> {
+  public async login(@Request() request: ExRequest, @Body() body: LoginRequest): Promise<AuthResponse> {
     const user = await this.authService.login(body.email, body.password);
     request.session.loggedIn = true;
     request.session.userId = user.id;
@@ -74,10 +61,7 @@ export class AuthController extends Controller {
   }
 
   @Post("register")
-  public async register(
-    @Request() request: ExRequest,
-    @Body() body: RegisterRequest,
-  ): Promise<AuthResponse> {
+  public async register(@Request() request: ExRequest, @Body() body: RegisterRequest): Promise<AuthResponse> {
     const user = await this.authService.register(body.username, body.email, body.password);
     request.session.loggedIn = true;
     request.session.userId = user.id;
@@ -98,10 +82,7 @@ export class AuthController extends Controller {
           errorRes(500, { message: "Er ging iets fout bij het uitloggen." });
           return resolve();
         }
-        this.setHeader(
-          "Set-Cookie",
-          "toodl_session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly",
-        );
+        this.setHeader("Set-Cookie", "toodl_session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly");
         successRes(200, { message: "Succesvol uitgelogd." });
         resolve();
       });
@@ -109,10 +90,7 @@ export class AuthController extends Controller {
   }
 
   @Post("google")
-  public async google(
-    @Request() request: ExRequest,
-    @Body() body: GoogleLoginRequest,
-  ): Promise<AuthResponse> {
+  public async google(@Request() request: ExRequest, @Body() body: GoogleLoginRequest): Promise<AuthResponse> {
     const user = await this.authService.google(body.token);
     request.session.loggedIn = true;
     request.session.userId = user.id;

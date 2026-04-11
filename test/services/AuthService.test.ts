@@ -1,40 +1,44 @@
-import { AuthService } from "@/services/AuthService";
-import prisma from "@/prisma";
-import { getUserByEmail } from "@/utils/database";
+import { ToodlError } from "#/errors/ToodlError.js";
+import welcomeMail from "#/mail/emails/welcomeMail.js";
+import { AuthService } from "#/services/AuthService.js";
+import { type IUserService } from "#/services/UserService.js";
+import { getUserByEmail } from "#/utils/database.js";
+import { type User } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import welcomeMail from "@/mail/emails/welcomeMail";
-import { ToodlError } from "@/errors/ToodlError";
-import { IUserService } from "@/services/UserService";
-import { User } from "@prisma/client";
+import { type Mock, type Mocked, vi } from "vitest";
 
-jest.mock("@/prisma", () => ({
-  user: {
-    create: jest.fn(),
+vi.mock("#/prisma.js", () => ({
+  default: {
+    user: {
+      create: vi.fn(),
+    },
   },
 }));
 
-jest.mock("@/utils/database", () => ({
-  getUserByEmail: jest.fn(),
+vi.mock("#/utils/database.js", () => ({
+  getUserByEmail: vi.fn(),
 }));
 
-jest.mock("bcryptjs", () => ({
-  hash: jest.fn(),
-  compare: jest.fn(),
+vi.mock("bcryptjs", () => ({
+  default: {
+    hash: vi.fn(),
+    compare: vi.fn(),
+  },
 }));
 
-jest.mock("@/mail/emails/welcomeMail");
+vi.mock("#/mail/emails/welcomeMail.js", () => ({ default: vi.fn() }));
 
 describe("AuthService", () => {
   let authService: AuthService;
-  let mockUserService: jest.Mocked<IUserService>;
+  let mockUserService: Mocked<IUserService>;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockUserService = {
-      createUserWithDefaults: jest.fn().mockImplementation((data) => Promise.resolve({ id: 1, ...data })),
-      update: jest.fn(),
-      delete: jest.fn(),
-      updatePassword: jest.fn(),
+      createUserWithDefaults: vi.fn().mockImplementation((data) => Promise.resolve({ id: 1, ...data })),
+      update: vi.fn(),
+      delete: vi.fn(),
+      updatePassword: vi.fn(),
     };
     authService = new AuthService(mockUserService);
   });
@@ -42,8 +46,8 @@ describe("AuthService", () => {
   describe("register", () => {
     it("should register a new user", async () => {
       const userData = { username: "testuser", email: "test@example.com", password: "password123" };
-      (getUserByEmail as jest.Mock).mockResolvedValue(null);
-      (bcrypt.hash as jest.Mock).mockResolvedValue("hashedPassword");
+      (getUserByEmail as Mock).mockResolvedValue(null);
+      (bcrypt.hash as Mock).mockResolvedValue("hashedPassword");
 
       const result = await authService.register(userData.username, userData.email, userData.password);
 
@@ -59,18 +63,17 @@ describe("AuthService", () => {
     });
 
     it("should throw error if email already exists", async () => {
-      (getUserByEmail as jest.Mock).mockResolvedValue({ id: 1, email: "test@example.com" } as User);
+      (getUserByEmail as Mock).mockResolvedValue({ id: 1, email: "test@example.com" } as User);
 
-      await expect(authService.register("testuser", "test@example.com", "password"))
-        .rejects.toThrow(ToodlError);
+      await expect(authService.register("testuser", "test@example.com", "password")).rejects.toThrow(ToodlError);
     });
   });
 
   describe("login", () => {
     it("should login with correct credentials", async () => {
       const user = { id: 1, email: "test@example.com", password: "hashedPassword" } as User;
-      (getUserByEmail as jest.Mock).mockResolvedValue(user);
-      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      (getUserByEmail as Mock).mockResolvedValue(user);
+      (bcrypt.compare as Mock).mockResolvedValue(true);
 
       const result = await authService.login("test@example.com", "password123");
 
@@ -79,11 +82,10 @@ describe("AuthService", () => {
 
     it("should throw error with incorrect password", async () => {
       const user = { id: 1, email: "test@example.com", password: "hashedPassword" } as User;
-      (getUserByEmail as jest.Mock).mockResolvedValue(user);
-      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+      (getUserByEmail as Mock).mockResolvedValue(user);
+      (bcrypt.compare as Mock).mockResolvedValue(false);
 
-      await expect(authService.login("test@example.com", "wrongpassword"))
-        .rejects.toThrow(ToodlError);
+      await expect(authService.login("test@example.com", "wrongpassword")).rejects.toThrow(ToodlError);
     });
   });
 });

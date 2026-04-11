@@ -1,11 +1,10 @@
-import welcomeMail from "@/mail/emails/welcomeMail";
-import prisma from "@/prisma";
-import { getUserByEmail } from "@/utils/database";
+import { ToodlError } from "#/errors/ToodlError.js";
+import welcomeMail from "#/mail/emails/welcomeMail.js";
+import { getUserByEmail } from "#/utils/database.js";
+import { type User } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { OAuth2Client } from "google-auth-library";
-import { ToodlError } from "@/errors/ToodlError";
-import { IUserService } from "./UserService";
-import { User } from "@prisma/client";
+import { type IUserService } from "./UserService.js";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -32,7 +31,7 @@ export class AuthService implements IAuthService {
       password: passwordHash,
     });
 
-    welcomeMail(user);
+    await welcomeMail(user);
     return user;
   }
 
@@ -56,10 +55,13 @@ export class AuthService implements IAuthService {
       throw new ToodlError("Er is iets foutgegaan met Google login.", "InternalError", 500);
     }
 
-    let user = await getUserByEmail(payload.email);
+    const user = await getUserByEmail(payload.email);
     if (!user) {
-      const newUser = await this.userService.createUserWithDefaults({ email: payload.email.toLowerCase(), username: payload.name });
-      welcomeMail(newUser);
+      const newUser = await this.userService.createUserWithDefaults({
+        email: payload.email.toLowerCase(),
+        username: payload.name,
+      });
+      await welcomeMail(newUser);
       return newUser;
     }
 

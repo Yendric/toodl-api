@@ -1,18 +1,7 @@
-import { IUserService } from "@/services/UserService";
-import { getAuthenticatedUser, getAuthenticatedUserId } from "@/utils/auth";
-import { Request as ExRequest } from "express";
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Request,
-  Res,
-  Route,
-  Security,
-  TsoaResponse,
-  Tags,
-} from "tsoa";
+import { type IUserService } from "#/services/UserService.js";
+import { getAuthenticatedUser, getAuthenticatedUserId } from "#/utils/auth.js";
+import { type Request as ExRequest } from "express";
+import { Body, Controller, Get, Post, Request, Res, Route, Security, Tags, type TsoaResponse } from "tsoa";
 
 interface UserInfoResponse {
   email: string;
@@ -76,7 +65,7 @@ export class UserController extends Controller {
   }
 
   @Get("/")
-  public async info(@Request() request: ExRequest): Promise<UserInfoResponse> {
+  public info(@Request() request: ExRequest): UserInfoResponse {
     const user = getAuthenticatedUser(request);
 
     return {
@@ -91,10 +80,7 @@ export class UserController extends Controller {
   }
 
   @Post("/")
-  public async update(
-    @Request() request: ExRequest,
-    @Body() body: UserUpdateRequest,
-  ): Promise<MessageResponse> {
+  public async update(@Request() request: ExRequest, @Body() body: UserUpdateRequest): Promise<MessageResponse> {
     const userId = getAuthenticatedUserId(request);
     await this.userService.update(userId, body);
     return { message: "Gebruiker succesvol geüpdatet." };
@@ -115,10 +101,7 @@ export class UserController extends Controller {
           errorRes(500, { message: "Er is iets foutgegaan." });
           return resolve();
         }
-        this.setHeader(
-          "Set-Cookie",
-          "toodl_session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly",
-        );
+        this.setHeader("Set-Cookie", "toodl_session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly");
         successRes(200, { message: "Gebruiker succesvol verwijderd." });
         resolve();
       });

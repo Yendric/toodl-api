@@ -1,4 +1,4 @@
-import { ToodlError } from "@/errors/ToodlError";
+import { ToodlError } from "#/errors/ToodlError.js";
 
 export class DataValidationError extends ToodlError {
   constructor(message: string) {
