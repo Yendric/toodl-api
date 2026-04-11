@@ -30,7 +30,12 @@ cron.schedule("0 18 * * *", () => {
           return todo.enableDeadline && todoDate.isSame(tomorrow, "day");
         });
         if (!todos.length) continue;
-        await todoMail(todos, user, "Todo's voor morgen", "morgen heeft u de volgende todo's gepland, vergeet ze niet:");
+        await todoMail(
+          todos,
+          user,
+          "Todo's voor morgen",
+          "morgen heeft u de volgende todo's gepland, vergeet ze niet:",
+        );
       }
     } catch (err) {
       logError("Error in daily email cronjob: " + String(err));
