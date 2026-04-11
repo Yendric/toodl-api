@@ -33,7 +33,11 @@ export class ListService implements IListService {
     });
   }
 
-  public async update(userId: number, listId: number, data: Partial<Pick<List, "name" | "color" | "type">>): Promise<List> {
+  public async update(
+    userId: number,
+    listId: number,
+    data: Partial<Pick<List, "name" | "color" | "type">>,
+  ): Promise<List> {
     return await prisma.list.update({
       data,
       where: { id: listId, userId },

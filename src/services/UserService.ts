@@ -33,7 +33,15 @@ export class UserService implements IUserService {
       const user = await tx.user.create({ data });
 
       // Create default categories
-      const categories = ["Groenten & Fruit", "Zuivel", "Bakkerij", "Dranken", "Vlees & Vis", "Diepvries", "Huishoudelijk"];
+      const categories = [
+        "Groenten & Fruit",
+        "Zuivel",
+        "Bakkerij",
+        "Dranken",
+        "Vlees & Vis",
+        "Diepvries",
+        "Huishoudelijk",
+      ];
       const createdCategories = await Promise.all(
         categories.map((name) =>
           tx.category.create({

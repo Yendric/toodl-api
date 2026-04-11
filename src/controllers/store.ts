@@ -68,10 +68,7 @@ export class StoreController extends Controller {
   }
 
   @Get("{storeId}/order")
-  public async getOrder(
-    @Request() request: ExRequest,
-    @Path() storeId: number,
-  ): Promise<StoreCategoryOrderResponse[]> {
+  public async getOrder(@Request() request: ExRequest, @Path() storeId: number): Promise<StoreCategoryOrderResponse[]> {
     const userId = getAuthenticatedUserId(request);
     return await this.storeService.getCategoryOrder(userId, storeId);
   }

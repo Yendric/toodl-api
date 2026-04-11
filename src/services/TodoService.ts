@@ -55,8 +55,8 @@ export class TodoService implements ITodoService {
     return todos.sort((a, b) => {
       if (a.done !== b.done) return a.done ? 1 : -1;
 
-      const orderA = a.categoryId !== null ? orderMap.get(a.categoryId) ?? Infinity : Infinity;
-      const orderB = b.categoryId !== null ? orderMap.get(b.categoryId) ?? Infinity : Infinity;
+      const orderA = a.categoryId !== null ? (orderMap.get(a.categoryId) ?? Infinity) : Infinity;
+      const orderB = b.categoryId !== null ? (orderMap.get(b.categoryId) ?? Infinity) : Infinity;
 
       if (orderA !== orderB) {
         if (orderA === Infinity) return 1;

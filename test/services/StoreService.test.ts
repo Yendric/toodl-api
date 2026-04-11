@@ -58,7 +58,10 @@ describe("StoreService", () => {
         return await callback(tx);
       });
 
-      const order = [{ categoryId: 1, position: 0 }, { categoryId: 2, position: 1 }];
+      const order = [
+        { categoryId: 1, position: 0 },
+        { categoryId: 2, position: 1 },
+      ];
       await storeService.updateCategoryOrder(1, 1, order);
 
       expect(prisma.store.findFirst).toHaveBeenCalledWith({ where: { id: 1, userId: 1 } });
