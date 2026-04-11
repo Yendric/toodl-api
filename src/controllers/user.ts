@@ -10,6 +10,9 @@ interface UserInfoResponse {
   dailyNotification: boolean;
   reminderNotification: boolean;
   nowNotification: boolean;
+  dailyPush: boolean;
+  reminderPush: boolean;
+  nowPush: boolean;
   icalUrls: string[];
 }
 
@@ -32,6 +35,9 @@ interface UserUpdateRequest {
   dailyNotification: boolean;
   reminderNotification: boolean;
   nowNotification: boolean;
+  dailyPush: boolean;
+  reminderPush: boolean;
+  nowPush: boolean;
 }
 
 interface PasswordUpdateRequest {
@@ -75,6 +81,9 @@ export class UserController extends Controller {
       dailyNotification: user.dailyNotification,
       reminderNotification: user.reminderNotification,
       nowNotification: user.nowNotification,
+      dailyPush: user.dailyPush,
+      reminderPush: user.reminderPush,
+      nowPush: user.nowPush,
       icalUrls: user.icalUrls,
     };
   }

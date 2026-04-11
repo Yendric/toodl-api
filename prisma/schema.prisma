@@ -42,16 +42,31 @@ model Todo {
 }
 
 model User {
-  id                   Int      @id @default(autoincrement())
-  email                String   @unique(map: "sqlite_autoindex_Users_1")
+  id                   Int                @id @default(autoincrement())
+  email                String             @unique(map: "sqlite_autoindex_Users_1")
   password             String?
   username             String
-  dailyNotification    Boolean  @default(true)
-  reminderNotification Boolean  @default(true)
-  nowNotification      Boolean  @default(true)
-  icalUrls             String[] @default([])
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  dailyNotification    Boolean            @default(true)
+  reminderNotification Boolean            @default(true)
+  nowNotification      Boolean            @default(true)
+  dailyPush            Boolean            @default(true)
+  reminderPush         Boolean            @default(true)
+  nowPush              Boolean            @default(true)
+  icalUrls             String[]           @default([])
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
   lists                List[]
   todos                Todo[]
+  pushSubscriptions    PushSubscription[]
+}
+
+model PushSubscription {
+  id        Int      @id @default(autoincrement())
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

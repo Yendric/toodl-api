@@ -11,6 +11,9 @@ export interface UserUpdateData {
   dailyNotification?: boolean;
   reminderNotification?: boolean;
   nowNotification?: boolean;
+  dailyPush?: boolean;
+  reminderPush?: boolean;
+  nowPush?: boolean;
   icalUrls?: string[];
 }
 
