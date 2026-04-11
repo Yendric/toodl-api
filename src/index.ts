@@ -1,5 +1,5 @@
 import handleError from "@/middleware/errorHandler";
-import routes from "@/routes/routes";
+import { RegisterRoutes } from "@/routes";
 import cors from "cors";
 import { config } from "dotenv";
 import express from "express";
@@ -7,11 +7,18 @@ import "express-async-errors";
 import session from "express-session";
 import helmet from "helmet";
 import SessionFileStore from "session-file-store";
+import swaggerUi from "swagger-ui-express";
+import swaggerDocument from "./swagger.json";
 
 config();
 const API_VERSION = "v1";
 
 const app = express();
+
+const swaggerOptions = {
+  ...swaggerDocument,
+  servers: [{ url: `${process.env.CALLBACK_URI ?? "http://localhost:3001"}/${API_VERSION}` }],
+};
 
 const FileStore = SessionFileStore(session);
 const sessionMiddleware = session({
@@ -28,7 +35,13 @@ app.use(helmet());
 app.use(cors({ origin: process.env.APP_URI?.split(","), credentials: true }));
 app.use(express.json());
 app.use(sessionMiddleware);
-app.use(`/${API_VERSION}`, routes);
+
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerOptions));
+
+const v1Router = express.Router();
+RegisterRoutes(v1Router);
+app.use(`/${API_VERSION}`, v1Router);
+
 app.use(handleError);
 
 import "@/cronjobs";

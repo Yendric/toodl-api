@@ -7,10 +7,11 @@
     "url": "https://github.com/Yendric/toodl-api"
   },
   "scripts": {
-    "build": "tsc && tsc-alias",
+    "build": "yarn tsoa:gen && tsc && tsc-alias",
     "serve": "npx prisma migrate deploy && node ./dist/server.js",
-    "dev": "set DEBUG=true && ts-node-dev --respawn --transpile-only -r tsconfig-paths/register ./src/server.ts",
-    "test": "jest --forceExit --coverage --verbose"
+    "dev": "yarn tsoa:gen && DEBUG=true ts-node-dev --respawn --transpile-only -r tsconfig-paths/register ./src/server.ts",
+    "test": "jest --forceExit --coverage --verbose",
+    "tsoa:gen": "tsoa spec-and-routes"
   },
   "lint-staged": {
     "**/*": "prettier --write --ignore-unknown"
@@ -33,6 +34,8 @@
     "node-cron": "^3.0.2",
     "nodemailer": "^6.9.4",
     "session-file-store": "^1.5.0",
+    "swagger-ui-express": "^5.0.1",
+    "tsoa": "^7.0.0-alpha.0",
     "typescript": "^5.1.6",
     "zod": "^3.22.2"
   },
@@ -46,6 +49,7 @@
     "@types/node-cron": "^3.0.8",
     "@types/nodemailer": "^6.4.9",
     "@types/supertest": "^2.0.12",
+    "@types/swagger-ui-express": "^4.1.8",
     "@types/validator": "^13.11.1",
     "@typescript-eslint/eslint-plugin": "^6.4.1",
     "@typescript-eslint/parser": "^6.4.1",
