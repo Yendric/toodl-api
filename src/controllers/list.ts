@@ -1,3 +1,4 @@
+import { ListType } from "@prisma/client";
 import { type IListService } from "#/services/ListService.js";
 import { getAuthenticatedUserId } from "#/utils/auth.js";
 import { type Request as ExRequest } from "express";
@@ -13,12 +14,14 @@ interface ListRequest {
    * @pattern ^#[0-9A-Fa-f]{6}$
    */
   color: string;
+  type?: ListType;
 }
 
 interface ListResponse {
   id: number;
   name: string;
   color: string;
+  type: ListType;
   userId: number;
   createdAt: Date;
   updatedAt: Date;

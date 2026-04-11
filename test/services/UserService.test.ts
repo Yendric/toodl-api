@@ -19,6 +19,15 @@ vi.mock("#/prisma.js", () => ({
     todo: {
       create: vi.fn(),
     },
+    category: {
+      create: vi.fn(),
+    },
+    store: {
+      create: vi.fn(),
+    },
+    storeCategoryOrder: {
+      createMany: vi.fn(),
+    },
   },
 }));
 
@@ -46,11 +55,16 @@ describe("UserService", () => {
       const mockUser = { id: 1, email: "test@example.com", username: "testuser" };
       const mockBoodschappenList = { id: 10, userId: 1, name: "Boodschappen", color: "#33AAFF" };
       const mockPlanningList = { id: 11, userId: 1, name: "Planning", color: "#FF0000" };
+      const mockCategory = { id: 20, name: "Test Category", userId: 1 };
+      const mockStore = { id: 30, name: "Supermarkt", userId: 1 };
 
-      (prisma.$transaction as Mock).mockImplementation(async (callback: (tx: unknown) => Promise<unknown>) => {
+      (prisma.$transaction as Mock).mockImplementation(async (callback: (tx: any) => Promise<unknown>) => {
         // Simulate the transaction object by passing the mocked prisma models
         const tx = {
           user: { create: vi.fn().mockResolvedValue(mockUser) },
+          category: { create: vi.fn().mockResolvedValue(mockCategory) },
+          store: { create: vi.fn().mockResolvedValue(mockStore) },
+          storeCategoryOrder: { createMany: vi.fn().mockResolvedValue({}) },
           list: {
             create: vi.fn().mockResolvedValueOnce(mockBoodschappenList).mockResolvedValueOnce(mockPlanningList),
           },

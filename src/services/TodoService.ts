@@ -11,25 +11,51 @@ export type TodoCreateData = Partial<
   subject: string;
   startTime?: string | Date | null;
   endTime?: string | Date | null;
+  categoryId?: number | null;
 };
 
 export interface ITodoService {
-  listForUser(userId: number): Promise<Todo[]>;
+  listForUser(userId: number, storeId?: number): Promise<Todo[]>;
   create(userId: number, data: TodoCreateData): Promise<Todo>;
   update(userId: number, todoId: number, data: Partial<TodoCreateData>): Promise<Todo>;
   delete(userId: number, todoId: number): Promise<Todo>;
 }
 
 export class TodoService implements ITodoService {
-  public async listForUser(userId: number): Promise<Todo[]> {
-    return await prisma.todo.findMany({
+  public async listForUser(userId: number, storeId?: number): Promise<Todo[]> {
+    const todos = await prisma.todo.findMany({
       where: { userId },
       orderBy: [{ done: "asc" }, { position: "asc" }, { startTime: "asc" }],
     });
+
+    if (storeId) {
+      const orders = await prisma.storeCategoryOrder.findMany({
+        where: { storeId },
+      });
+
+      const orderMap = new Map<number, number>(orders.map((o) => [o.categoryId, o.position]));
+
+      return todos.sort((a, b) => {
+        if (a.done !== b.done) return a.done ? 1 : -1;
+
+        const orderA = a.categoryId !== null ? orderMap.get(a.categoryId) ?? Infinity : Infinity;
+        const orderB = b.categoryId !== null ? orderMap.get(b.categoryId) ?? Infinity : Infinity;
+
+        if (orderA !== orderB) {
+          if (orderA === Infinity) return 1;
+          if (orderB === Infinity) return -1;
+          return orderA - orderB;
+        }
+
+        return a.position.localeCompare(b.position);
+      });
+    }
+
+    return todos;
   }
 
   public async create(userId: number, data: TodoCreateData): Promise<Todo> {
-    const { startTime, endTime, listId, ...rest } = data;
+    const { startTime, endTime, listId, categoryId, ...rest } = data;
     const finalStartTime = startTime ? new Date(startTime) : new Date();
     const finalEndTime = endTime ? new Date(endTime) : dayjs(finalStartTime).add(1, "hour").toDate();
 
@@ -45,6 +71,13 @@ export class TodoService implements ITodoService {
       if (amount >= 100) {
         throw new DatabaseLimitError("Je kan maximaal 100 todos per lijst hebben.");
       }
+    }
+
+    if (categoryId) {
+      const category = await prisma.category.findFirst({
+        where: { id: categoryId, userId },
+      });
+      if (!category) throw new DataValidationError("Categorie niet gevonden.");
     }
 
     let finalPosition = rest.position;
@@ -63,13 +96,14 @@ export class TodoService implements ITodoService {
         startTime: finalStartTime,
         endTime: finalEndTime,
         listId,
+        categoryId,
         userId,
       },
     });
   }
 
   public async update(userId: number, todoId: number, data: Partial<TodoCreateData>): Promise<Todo> {
-    const { startTime, endTime, listId, ...rest } = data;
+    const { startTime, endTime, listId, categoryId, ...rest } = data;
     const updateData: Prisma.TodoUpdateInput = { ...rest };
 
     if (startTime) updateData.startTime = new Date(startTime);
@@ -81,6 +115,18 @@ export class TodoService implements ITodoService {
       });
       if (!list) throw new DataValidationError("Lijst niet gevonden.");
       updateData.list = { connect: { id: listId } };
+    }
+
+    if (categoryId !== undefined) {
+      if (categoryId === null) {
+        updateData.category = { disconnect: true };
+      } else {
+        const category = await prisma.category.findFirst({
+          where: { id: categoryId, userId },
+        });
+        if (!category) throw new DataValidationError("Categorie niet gevonden.");
+        updateData.category = { connect: { id: categoryId } };
+      }
     }
 
     return await prisma.todo.update({

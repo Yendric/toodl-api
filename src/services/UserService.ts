@@ -32,11 +32,42 @@ export class UserService implements IUserService {
     return await prisma.$transaction(async (tx) => {
       const user = await tx.user.create({ data });
 
+      // Create default categories
+      const categories = ["Groenten & Fruit", "Zuivel", "Bakkerij", "Dranken", "Vlees & Vis", "Diepvries", "Huishoudelijk"];
+      const createdCategories = await Promise.all(
+        categories.map((name) =>
+          tx.category.create({
+            data: {
+              name,
+              userId: user.id,
+            },
+          }),
+        ),
+      );
+
+      // Create default store
+      const store = await tx.store.create({
+        data: {
+          name: "Supermarkt",
+          userId: user.id,
+        },
+      });
+
+      // Set default category order for the store
+      await tx.storeCategoryOrder.createMany({
+        data: createdCategories.map((category, index) => ({
+          storeId: store.id,
+          categoryId: category.id,
+          position: index,
+        })),
+      });
+
       const boodschappen = await tx.list.create({
         data: {
           userId: user.id,
           name: "Boodschappen",
           color: "#33AAFF",
+          type: "SHOPPING",
         },
       });
 
