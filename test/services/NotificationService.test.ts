@@ -63,9 +63,7 @@ describe("NotificationService", () => {
       const user = {
         id: userId,
         dailyPush: true,
-        pushSubscriptions: [
-          { endpoint: "sub1", p256dh: "p1", auth: "a1" },
-        ],
+        pushSubscriptions: [{ endpoint: "sub1", p256dh: "p1", auth: "a1" }],
       };
       (prisma.user.findUnique as Mock).mockResolvedValue(user);
       (webpush.sendNotification as Mock).mockResolvedValue({});
@@ -80,9 +78,7 @@ describe("NotificationService", () => {
       const user = {
         id: userId,
         dailyPush: false,
-        pushSubscriptions: [
-          { endpoint: "sub1", p256dh: "p1", auth: "a1" },
-        ],
+        pushSubscriptions: [{ endpoint: "sub1", p256dh: "p1", auth: "a1" }],
       };
       (prisma.user.findUnique as Mock).mockResolvedValue(user);
 
@@ -96,9 +92,7 @@ describe("NotificationService", () => {
       const user = {
         id: userId,
         dailyPush: true,
-        pushSubscriptions: [
-          { endpoint: "sub1", p256dh: "p1", auth: "a1" },
-        ],
+        pushSubscriptions: [{ endpoint: "sub1", p256dh: "p1", auth: "a1" }],
       };
       (prisma.user.findUnique as Mock).mockResolvedValue(user);
       (webpush.sendNotification as Mock).mockRejectedValue({ statusCode: 410 });
