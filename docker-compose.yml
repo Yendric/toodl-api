@@ -6,7 +6,7 @@ services:
     image: yendric/toodl-api:main
     restart: always
     volumes:
-      - ./sessions:/usr/src/app/sessions
+      - ./sessions:/app/sessions
     ports:
       - ${PORT}:${PORT}
     env_file:

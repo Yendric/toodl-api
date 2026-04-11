@@ -8,8 +8,8 @@ services:
       context: .
       target: development
     volumes:
-      - ./:/usr/src/app
-      - /usr/src/node_modules
+      - ./:/app
+      - /app/node_modules
     ports:
       - ${PORT}:${PORT}
     depends_on:
