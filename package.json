@@ -8,9 +8,9 @@
   },
   "scripts": {
     "build": "pnpm tsoa:gen && tsc",
-    "serve": "npx prisma migrate deploy && node ./dist/server.js",
-    "dev": "pnpm tsoa:gen && DEBUG=true npx tsx --watch ./src/server.ts",
-    "lint": "eslint .",
+    "serve": "pnpm dlx prisma migrate deploy && node ./dist/server.js",
+    "dev": "pnpm tsoa:gen && DEBUG=true pnpm dlx tsx --watch ./src/server.ts",
+    "lint": "pnpm tsoa:gen && eslint .",
     "format:check": "prettier --check .",
     "format:fix": "prettier --write .",
     "test": "pnpm tsoa:gen && vitest run --coverage",
@@ -60,6 +60,7 @@
     "prettier": "3.8.2",
     "prisma": "5.1.1",
     "supertest": "^7.2.2",
+    "tsx": "^4.21.0",
     "typescript-eslint": "^8.58.1",
     "vitest": "^4.1.4"
   },
