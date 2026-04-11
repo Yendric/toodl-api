@@ -28,6 +28,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
       - run: pnpm install --frozen-lockfile
+      - name: Generate Prisma Client
+        run: npx prisma generate
       - run: pnpm run lint
 
   format:
@@ -72,6 +74,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
       - run: pnpm install --frozen-lockfile
+      - name: Generate Prisma Client
+        run: npx prisma generate
       - run: pnpm run build
 
   test:
@@ -94,4 +98,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
       - run: pnpm install --frozen-lockfile
+      - name: Generate Prisma Client
+        run: npx prisma generate
       - run: pnpm run test
