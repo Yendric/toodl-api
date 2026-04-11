@@ -15,12 +15,13 @@ function handleError(err: unknown, req: Request, res: Response, _next: NextFunct
     return res.status(err.status).json({ message: err.message });
   } else {
     const status = (err && typeof err === "object" && "status" in err && typeof err.status === "number") ? err.status : 500;
-    const message = (err && typeof err === "object" && "message" in err && typeof err.message === "string") ? err.message : "Er is iets foutgegaan.";
     
     if (status === 500) {
-      console.log(err);
+      console.error(err);
+      return res.status(500).json({ message: "Er is iets foutgegaan." });
     }
-    
+
+    const message = (err && typeof err === "object" && "message" in err && typeof err.message === "string") ? err.message : "Er is iets foutgegaan.";
     return res.status(status).json({ message });
   }
 }
