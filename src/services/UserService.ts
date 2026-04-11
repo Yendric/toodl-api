@@ -1,9 +1,9 @@
-import dayjs from "dayjs";
-import removalMail from "@/mail/emails/removalMail";
-import prisma from "@/prisma";
+import { ToodlError } from "#/errors/ToodlError.js";
+import removalMail from "#/mail/emails/removalMail.js";
+import prisma from "#/prisma.js";
+import { Prisma, type User } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { ToodlError } from "@/errors/ToodlError";
-import { User, Prisma } from "@prisma/client";
+import dayjs from "dayjs";
 
 export interface UserUpdateData {
   email?: string;
@@ -96,7 +96,7 @@ export class UserService implements IUserService {
 
   public async delete(user: User): Promise<void> {
     await prisma.user.delete({ where: { id: user.id } });
-    removalMail(user);
+    await removalMail(user);
   }
 
   public async updatePassword(user: User, data: PasswordUpdateData): Promise<void> {

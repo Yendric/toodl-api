@@ -1,18 +1,7 @@
-import { IListService } from "@/services/ListService";
-import { getAuthenticatedUserId } from "@/utils/auth";
-import { Request as ExRequest } from "express";
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Path,
-  Post,
-  Request,
-  Route,
-  Security,
-  Tags,
-} from "tsoa";
+import { type IListService } from "#/services/ListService.js";
+import { getAuthenticatedUserId } from "#/utils/auth.js";
+import { type Request as ExRequest } from "express";
+import { Body, Controller, Delete, Get, Path, Post, Request, Route, Security, Tags } from "tsoa";
 
 interface ListRequest {
   /**
@@ -50,10 +39,7 @@ export class ListController extends Controller {
   }
 
   @Post("/")
-  public async store(
-    @Request() request: ExRequest,
-    @Body() body: ListRequest,
-  ): Promise<ListResponse> {
+  public async store(@Request() request: ExRequest, @Body() body: ListRequest): Promise<ListResponse> {
     const userId = getAuthenticatedUserId(request);
     return await this.listService.create(userId, body);
   }
@@ -69,10 +55,7 @@ export class ListController extends Controller {
   }
 
   @Delete("{listId}")
-  public async destroy(
-    @Request() request: ExRequest,
-    @Path() listId: number,
-  ): Promise<boolean> {
+  public async destroy(@Request() request: ExRequest, @Path() listId: number): Promise<boolean> {
     const userId = getAuthenticatedUserId(request);
     await this.listService.delete(userId, listId);
     return true;

@@ -1,12 +1,12 @@
-import { AuthController } from "./controllers/auth";
-import { ListController } from "./controllers/list";
-import { TodoController } from "./controllers/todo";
-import { UserController } from "./controllers/user";
-import { AuthService, IAuthService } from "./services/AuthService";
-import { ListService, IListService } from "./services/ListService";
-import { TodoService, ITodoService } from "./services/TodoService";
-import { UserService, IUserService } from "./services/UserService";
 import { Controller } from "tsoa";
+import { AuthController } from "./controllers/auth.js";
+import { ListController } from "./controllers/list.js";
+import { TodoController } from "./controllers/todo.js";
+import { UserController } from "./controllers/user.js";
+import { AuthService, type IAuthService } from "./services/AuthService.js";
+import { ListService, type IListService } from "./services/ListService.js";
+import { TodoService, type ITodoService } from "./services/TodoService.js";
+import { UserService, type IUserService } from "./services/UserService.js";
 
 class IoCContainer {
   private _userService: IUserService;
@@ -21,21 +21,21 @@ class IoCContainer {
     this._todoService = new TodoService();
   }
 
-  public async get<T extends Controller>(controller: new (...args: any[]) => T): Promise<T> {
-    if (controller === AuthController as unknown) {
+  public get<T extends Controller>(controller: new (...args: unknown[]) => T): T {
+    if (controller === (AuthController as unknown)) {
       return new AuthController(this._authService) as unknown as T;
     }
-    if (controller === ListController as unknown) {
+    if (controller === (ListController as unknown)) {
       return new ListController(this._listService) as unknown as T;
     }
-    if (controller === TodoController as unknown) {
+    if (controller === (TodoController as unknown)) {
       return new TodoController(this._todoService) as unknown as T;
     }
-    if (controller === UserController as unknown) {
+    if (controller === (UserController as unknown)) {
       return new UserController(this._userService) as unknown as T;
     }
 
-    return new controller();
+    return new (controller as new (...args: unknown[]) => T)();
   }
 }
 

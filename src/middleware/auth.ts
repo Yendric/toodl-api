@@ -1,5 +1,5 @@
-import { getUserById } from "@/utils/database";
-import { NextFunction, Request, Response } from "express";
+import { getUserById } from "#/utils/database.js";
+import type { NextFunction, Request, Response } from "express";
 
 async function isLoggedIn(req: Request, res: Response, next: NextFunction) {
   if (req.session?.loggedIn && req.session.userId) {
@@ -7,7 +7,7 @@ async function isLoggedIn(req: Request, res: Response, next: NextFunction) {
 
     if (!user) {
       // Gebruiker bestaat niet meer, uitloggen
-      return req.session.destroy((_) => {
+      return req.session.destroy(() => {
         res.clearCookie("toodl_session");
         return res.status(200).json({ message: "Gebruiker is verwijderd. U bent nu uitgelogd." });
       });

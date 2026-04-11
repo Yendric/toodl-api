@@ -1,8 +1,8 @@
-import { Todo } from "@prisma/client";
+import { type Todo } from "@prisma/client";
 import dayjs from "dayjs";
-import { sendMail } from "..";
+import { sendMail } from "../index.js";
 
-export default function (
+export default async function (
   todos: Todo[],
   user: { email: string } & { [x: string | number | symbol]: unknown },
   tekst: string,
@@ -22,5 +22,5 @@ export default function (
       .join("") +
     "</ul>";
 
-  sendMail(user.email, tekst, onderwerp, todoHTML);
+  await sendMail(user.email, tekst, onderwerp, todoHTML);
 }

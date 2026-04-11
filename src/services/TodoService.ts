@@ -1,10 +1,13 @@
-import prisma from "@/prisma";
-import { DataValidationError } from "@/errors/DataValidationError";
-import { DatabaseLimitError } from "@/errors/DatabaseLimitError";
+import { DataValidationError } from "#/errors/DataValidationError.js";
+import { DatabaseLimitError } from "#/errors/DatabaseLimitError.js";
+import prisma from "#/prisma.js";
+import { Prisma, type Todo } from "@prisma/client";
 import dayjs from "dayjs";
-import { Todo, Prisma } from "@prisma/client";
+import { generateKeyBetween } from "fractional-indexing";
 
-export type TodoCreateData = Partial<Omit<Todo, "id" | "userId" | "createdAt" | "updatedAt" | "startTime" | "endTime">> & {
+export type TodoCreateData = Partial<
+  Omit<Todo, "id" | "userId" | "createdAt" | "updatedAt" | "startTime" | "endTime">
+> & {
   subject: string;
   startTime?: string | Date | null;
   endTime?: string | Date | null;
@@ -21,7 +24,7 @@ export class TodoService implements ITodoService {
   public async listForUser(userId: number): Promise<Todo[]> {
     return await prisma.todo.findMany({
       where: { userId },
-      orderBy: [{ done: "asc" }, { startTime: "asc" }],
+      orderBy: [{ done: "asc" }, { position: "asc" }, { startTime: "asc" }],
     });
   }
 
@@ -44,9 +47,19 @@ export class TodoService implements ITodoService {
       }
     }
 
+    let finalPosition = rest.position;
+    if (!finalPosition) {
+      const lastTodo = await prisma.todo.findFirst({
+        where: { userId, listId: listId || null },
+        orderBy: { position: "desc" },
+      });
+      finalPosition = generateKeyBetween(lastTodo?.position || null, null);
+    }
+
     return await prisma.todo.create({
       data: {
         ...rest,
+        position: finalPosition,
         startTime: finalStartTime,
         endTime: finalEndTime,
         listId,

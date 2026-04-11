@@ -1,18 +1,7 @@
-import { ITodoService } from "@/services/TodoService";
-import { getAuthenticatedUserId } from "@/utils/auth";
-import { Request as ExRequest } from "express";
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Path,
-  Post,
-  Request,
-  Route,
-  Security,
-  Tags,
-} from "tsoa";
+import { type ITodoService } from "#/services/TodoService.js";
+import { getAuthenticatedUserId } from "#/utils/auth.js";
+import { type Request as ExRequest } from "express";
+import { Body, Controller, Delete, Get, Path, Post, Request, Route, Security, Tags } from "tsoa";
 
 interface TodoCreateRequest {
   done?: boolean;
@@ -50,6 +39,10 @@ interface TodoCreateRequest {
   startTime?: string | Date;
   endTime?: string | Date | null;
   listId?: number | null;
+  /**
+   * @maxLength 255
+   */
+  position?: string;
 }
 
 interface TodoResponse {
@@ -65,6 +58,7 @@ interface TodoResponse {
   startTime: Date | null;
   endTime: Date | null;
   recurrenceException: string | null;
+  position: string;
   done: boolean;
   listId: number | null;
   userId: number;
@@ -87,10 +81,7 @@ export class TodoController extends Controller {
   }
 
   @Post("/")
-  public async store(
-    @Request() request: ExRequest,
-    @Body() body: TodoCreateRequest,
-  ): Promise<TodoResponse> {
+  public async store(@Request() request: ExRequest, @Body() body: TodoCreateRequest): Promise<TodoResponse> {
     const userId = getAuthenticatedUserId(request);
     return await this.todoService.create(userId, body);
   }
@@ -106,10 +97,7 @@ export class TodoController extends Controller {
   }
 
   @Delete("{todoId}")
-  public async destroy(
-    @Request() request: ExRequest,
-    @Path() todoId: number,
-  ): Promise<boolean> {
+  public async destroy(@Request() request: ExRequest, @Path() todoId: number): Promise<boolean> {
     const userId = getAuthenticatedUserId(request);
     await this.todoService.delete(userId, todoId);
     return true;

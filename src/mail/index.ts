@@ -1,5 +1,5 @@
-import { emailTemplate } from "@/mail/template";
-import { error, success } from "@/utils/logging";
+import { emailTemplate } from "#/mail/template.js";
+import { error, success } from "#/utils/logging.js";
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
@@ -10,22 +10,18 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export function sendMail(to: string, tekst: string, onderwerp: string, html: string) {
-  return transporter.sendMail(
-    {
+export async function sendMail(to: string, tekst: string, onderwerp: string, html: string) {
+  try {
+    const info = await transporter.sendMail({
       from: "Toodl Notificaties <toodl@yendric.be>",
       replyTo: "Toodl Notificaties <toodl@yendric.be>",
       to,
       subject: "Toodl - " + onderwerp,
       text: "Dit bericht bevat info over todos, bekijk de HTML versie voor meer info.",
       html: emailTemplate.replaceAll("{onderwerp}", onderwerp).replace("{text}", tekst).replace("{html}", html),
-    },
-    function (err, info) {
-      if (err) {
-        error("Fout bij het versturen van e-mail:" + err);
-      } else {
-        success("Email verzonden: " + info.response);
-      }
-    },
-  );
+    });
+    success("Email verzonden: " + info.response);
+  } catch (err) {
+    error("Fout bij het versturen van e-mail: " + String(err));
+  }
 }

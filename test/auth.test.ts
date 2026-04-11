@@ -1,5 +1,5 @@
+import { app } from "#/index.js";
 import request from "supertest";
-import { app } from "../src";
 
 describe("GET /v1/auth/user_data", () => {
   it("should say logged out", () => {

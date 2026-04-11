@@ -31,6 +31,7 @@ model Todo {
   startTime           DateTime?
   endTime             DateTime?
   recurrenceException String?
+  position            String    @default("a0")
   done                Boolean   @default(false)
   listId              Int?
   userId              Int

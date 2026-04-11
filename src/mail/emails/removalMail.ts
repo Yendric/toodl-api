@@ -1,7 +1,7 @@
-import { sendMail } from "..";
+import { sendMail } from "../index.js";
 
-export default function (user: { email: string } & { [x: string | number | symbol]: unknown }) {
-  sendMail(
+export default async function (user: { email: string; username: string } & { [x: string | number | symbol]: unknown }) {
+  await sendMail(
     user.email,
     "",
     "Account verwijderd",

@@ -1,14 +1,13 @@
-import handleError from "@/middleware/errorHandler";
-import { RegisterRoutes } from "@/routes";
+import handleError from "#/middleware/errorHandler.js";
+import { RegisterRoutes } from "#/routes.js";
 import cors from "cors";
 import { config } from "dotenv";
 import express from "express";
-import "express-async-errors";
 import session from "express-session";
 import helmet from "helmet";
 import SessionFileStore from "session-file-store";
 import swaggerUi from "swagger-ui-express";
-import swaggerDocument from "./swagger.json";
+import swaggerDocument from "./swagger.json" with { type: "json" };
 
 config();
 const API_VERSION = "v1";
@@ -44,6 +43,6 @@ app.use(`/${API_VERSION}`, v1Router);
 
 app.use(handleError);
 
-import "@/cronjobs";
+import "#/cronjobs/index.js";
 
 export { API_VERSION, app, sessionMiddleware };

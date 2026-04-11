@@ -1,78 +1,92 @@
-import todoMail from "@/mail/emails/todoMail";
-import prisma from "@/prisma";
+import todoMail from "#/mail/emails/todoMail.js";
+import prisma from "#/prisma.js";
 import dayjs from "dayjs";
 import cron from "node-cron";
+
+import { error as logError } from "#/utils/logging.js";
 
 /*
 /  Email schedule, elke dag om 18:00 uur e-mail over de todos van morgen.
 */
-cron.schedule("0 18 * * *", async function () {
-  const users = await prisma.user.findMany({
-    select: {
-      email: true,
-      username: true,
-      todos: {
-        where: {
-          done: false,
-          enableDeadline: true,
+cron.schedule("0 18 * * *", () => {
+  void (async () => {
+    try {
+      const users = await prisma.user.findMany({
+        select: {
+          email: true,
+          username: true,
+          todos: {
+            where: {
+              done: false,
+              enableDeadline: true,
+            },
+          },
         },
-      },
-    },
-  });
-  users.forEach(async (user) => {
-    const todos = user.todos.filter((todo) => {
-      const todoDate = dayjs(todo.startTime);
-      const tomorrow = dayjs().add(1, "days");
-      return todo.enableDeadline && todoDate.isSame(tomorrow, "day");
-    });
-    if (!todos.length) return;
-    todoMail(todos, user, "Todo's voor morgen", "morgen heeft u de volgende todo's gepland, vergeet ze niet:");
-  });
+      });
+      for (const user of users) {
+        const todos = user.todos.filter((todo) => {
+          const todoDate = dayjs(todo.startTime);
+          const tomorrow = dayjs().add(1, "days");
+          return todo.enableDeadline && todoDate.isSame(tomorrow, "day");
+        });
+        if (!todos.length) continue;
+        await todoMail(todos, user, "Todo's voor morgen", "morgen heeft u de volgende todo's gepland, vergeet ze niet:");
+      }
+    } catch (err) {
+      logError("Error in daily email cronjob: " + String(err));
+    }
+  })();
 });
 
 /*
 /  Controleert elke minuut op actuele todo's en todo's binnen een kwartier
 */
-cron.schedule("* * * * *", async function () {
-  const users = await prisma.user.findMany({
-    select: {
-      email: true,
-      username: true,
-      todos: {
-        where: {
-          done: false,
-          enableDeadline: true,
+cron.schedule("* * * * *", () => {
+  void (async () => {
+    try {
+      const users = await prisma.user.findMany({
+        select: {
+          email: true,
+          username: true,
+          todos: {
+            where: {
+              done: false,
+              enableDeadline: true,
+            },
+          },
         },
-      },
-    },
-  });
-  users.forEach(async (user) => {
-    const currentTodos = user.todos.filter((todo) => {
-      const now = dayjs();
-      const todoDate = dayjs(todo.startTime);
-      return todo.enableDeadline && todoDate.isSame(now, "minute");
-    });
-    if (currentTodos.length) {
-      todoMail(
-        currentTodos,
-        user,
-        "U heeft een todo gepland",
-        "op dit moment heeft u de volgende todo('s) gepland, vergeet ze niet:",
-      );
-    }
+      });
+      for (const user of users) {
+        const currentTodos = user.todos.filter((todo) => {
+          const now = dayjs();
+          const todoDate = dayjs(todo.startTime);
+          return todo.enableDeadline && todoDate.isSame(now, "minute");
+        });
+        if (currentTodos.length) {
+          await todoMail(
+            currentTodos,
+            user,
+            "U heeft een todo gepland",
+            "op dit moment heeft u de volgende todo('s) gepland, vergeet ze niet:",
+          );
+        }
 
-    const quartreTodos = user.todos.filter((todo) => {
-      const now = dayjs();
-      const todoDate = dayjs(todo.startTime);
-      return todo.enableDeadline && todoDate.diff(now, "minute") === 15;
-    });
-    if (quartreTodos.length) {
-      todoMail(
-        quartreTodos,
-        user,
-        "Todos over een kwartier",
-        "over een kwartier heeft u de volgende todo('s) gepland, vergeet ze niet:",
-      );
+        const quartreTodos = user.todos.filter((todo) => {
+          const now = dayjs();
+          const todoDate = dayjs(todo.startTime);
+          return todo.enableDeadline && todoDate.diff(now, "minute") === 15;
+        });
+        if (quartreTodos.length) {
+          await todoMail(
+            quartreTodos,
+            user,
+            "Todos over een kwartier",
+            "over een kwartier heeft u de volgende todo('s) gepland, vergeet ze niet:",
+          );
+        }
+      }
+    } catch (err) {
+      logError("Error in minute check cronjob: " + String(err));
     }
-  });
+  })();
 });

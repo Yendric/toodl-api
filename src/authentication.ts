@@ -1,13 +1,9 @@
-import { getUserById } from "@/utils/database";
-import { User } from "@prisma/client";
-import { Request } from "express";
-import { ToodlError } from "@/errors/ToodlError";
+import { ToodlError } from "#/errors/ToodlError.js";
+import { getUserById } from "#/utils/database.js";
+import { type User } from "@prisma/client";
+import { type Request } from "express";
 
-export async function expressAuthentication(
-  request: Request,
-  securityName: string,
-  _scopes?: string[],
-): Promise<User> {
+export async function expressAuthentication(request: Request, securityName: string): Promise<User> {
   if (securityName === "session") {
     if (request.session?.loggedIn && request.session.userId) {
       const user = await getUserById(request.session.userId);

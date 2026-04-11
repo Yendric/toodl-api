@@ -1,5 +1,5 @@
-import { ToodlError } from "@/errors/ToodlError";
-import { Request } from "express";
+import { ToodlError } from "#/errors/ToodlError.js";
+import { type Request } from "express";
 
 export function getAuthenticatedUserId(req: Request) {
   if (req.session.userId) {
