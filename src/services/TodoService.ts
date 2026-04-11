@@ -29,7 +29,7 @@ export class TodoService implements ITodoService {
       orderBy: [{ done: "asc" }, { position: "asc" }, { startTime: "asc" }],
     });
 
-    return this.applyStoreSorting(todos, storeId);
+    return this.applyStoreSorting(todos, storeId, userId);
   }
 
   public async listByList(userId: number, listId: number, storeId?: number): Promise<Todo[]> {
@@ -38,12 +38,20 @@ export class TodoService implements ITodoService {
       orderBy: [{ done: "asc" }, { position: "asc" }, { startTime: "asc" }],
     });
 
-    return this.applyStoreSorting(todos, storeId);
+    return this.applyStoreSorting(todos, storeId, userId);
   }
 
-  private async applyStoreSorting(todos: Todo[], storeId?: number): Promise<Todo[]> {
+  private async applyStoreSorting(todos: Todo[], storeId?: number, userId?: number): Promise<Todo[]> {
     if (!storeId) {
       return todos;
+    }
+
+    // Verify store ownership if userId is provided
+    if (userId) {
+      const store = await prisma.store.findFirst({
+        where: { id: storeId, userId },
+      });
+      if (!store) throw new DataValidationError("Winkel niet gevonden.");
     }
 
     const orders = await prisma.storeCategoryOrder.findMany({
@@ -123,12 +131,16 @@ export class TodoService implements ITodoService {
     if (startTime) updateData.startTime = new Date(startTime);
     if (endTime) updateData.endTime = new Date(endTime);
 
-    if (listId) {
-      const list = await prisma.list.findFirst({
-        where: { id: listId, userId },
-      });
-      if (!list) throw new DataValidationError("Lijst niet gevonden.");
-      updateData.list = { connect: { id: listId } };
+    if (listId !== undefined) {
+      if (listId === null) {
+        updateData.list = { disconnect: true };
+      } else {
+        const list = await prisma.list.findFirst({
+          where: { id: listId, userId },
+        });
+        if (!list) throw new DataValidationError("Lijst niet gevonden.");
+        updateData.list = { connect: { id: listId } };
+      }
     }
 
     if (categoryId !== undefined) {

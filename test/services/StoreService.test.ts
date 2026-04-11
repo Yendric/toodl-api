@@ -1,3 +1,4 @@
+import { DataValidationError } from "#/errors/DataValidationError.js";
 import prisma from "#/prisma.js";
 import { StoreService } from "#/services/StoreService.js";
 import { vi, type Mock } from "vitest";
@@ -11,6 +12,9 @@ vi.mock("#/prisma.js", () => ({
       create: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
+    },
+    category: {
+      findMany: vi.fn(),
     },
     storeCategoryOrder: {
       findMany: vi.fn(),
@@ -44,9 +48,10 @@ describe("StoreService", () => {
   });
 
   describe("updateCategoryOrder", () => {
-    it("should update category order for a store within a transaction", async () => {
+    it("should update category order for a store within a transaction if ownership is verified", async () => {
       const mockStore = { id: 1, userId: 1, name: "Aldi" };
       (prisma.store.findFirst as Mock).mockResolvedValue(mockStore);
+      (prisma.category.findMany as Mock).mockResolvedValue([{ id: 1 }, { id: 2 }]);
 
       (prisma.$transaction as Mock).mockImplementation(async (callback: (tx: any) => Promise<unknown>) => {
         const tx = {
@@ -65,13 +70,25 @@ describe("StoreService", () => {
       await storeService.updateCategoryOrder(1, 1, order);
 
       expect(prisma.store.findFirst).toHaveBeenCalledWith({ where: { id: 1, userId: 1 } });
+      expect(prisma.category.findMany).toHaveBeenCalled();
       expect(prisma.$transaction).toHaveBeenCalled();
     });
 
-    it("should throw error if store not found", async () => {
+    it("should throw DataValidationError if store not found", async () => {
       (prisma.store.findFirst as Mock).mockResolvedValue(null);
 
-      await expect(storeService.updateCategoryOrder(1, 1, [])).rejects.toThrow("Store not found");
+      await expect(storeService.updateCategoryOrder(1, 1, [])).rejects.toThrow(DataValidationError);
+    });
+
+    it("should throw DataValidationError if categories don't belong to user", async () => {
+      (prisma.store.findFirst as Mock).mockResolvedValue({ id: 1, userId: 1 });
+      (prisma.category.findMany as Mock).mockResolvedValue([{ id: 1 }]); // Only 1 found, but 2 requested
+
+      const order = [
+        { categoryId: 1, position: 0 },
+        { categoryId: 2, position: 1 },
+      ];
+      await expect(storeService.updateCategoryOrder(1, 1, order)).rejects.toThrow(DataValidationError);
     });
   });
 });

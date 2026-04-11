@@ -1,3 +1,4 @@
+import { DataValidationError } from "#/errors/DataValidationError.js";
 import prisma from "#/prisma.js";
 import { type Store, type StoreCategoryOrder } from "@prisma/client";
 
@@ -49,7 +50,7 @@ export class StoreService implements IStoreService {
     const store = await prisma.store.findFirst({
       where: { id: storeId, userId },
     });
-    if (!store) throw new Error("Store not found");
+    if (!store) throw new DataValidationError("Winkel niet gevonden.");
 
     return await prisma.storeCategoryOrder.findMany({
       where: { storeId },
@@ -66,7 +67,21 @@ export class StoreService implements IStoreService {
     const store = await prisma.store.findFirst({
       where: { id: storeId, userId },
     });
-    if (!store) throw new Error("Store not found");
+    if (!store) throw new DataValidationError("Winkel niet gevonden.");
+
+    // Check if all categories belong to user
+    const categoryIds = order.map((o) => o.categoryId);
+    const userCategories = await prisma.category.findMany({
+      where: {
+        userId,
+        id: { in: categoryIds },
+      },
+      select: { id: true },
+    });
+
+    if (userCategories.length !== new Set(categoryIds).size) {
+      throw new DataValidationError("Eén of meerdere categorieën niet gevonden.");
+    }
 
     await prisma.$transaction(async (tx) => {
       // Clear existing order
