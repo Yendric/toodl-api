@@ -8,10 +8,10 @@ Officiële Toodl-API repository. https://toodl.yendric.be
 ## Installatie
 
 1. Clone: `git clone git@github.com:Yendric/toodl-api`
-2. Installeer dependencies: `yarn`
+2. Installeer dependencies: `pnpm install`
 3. Stel je _.env_ file in
-4. Maak een build: `yarn build`
-5. Start de applicatie: `yarn serve`
+4. Maak een build: `pnpm build`
+5. Start de applicatie: `pnpm serve`
 
 ## Toodl
 
