@@ -5,7 +5,14 @@
   "controllerPathGlobs": ["src/controllers/**/*.ts"],
   "spec": {
     "outputDirectory": "src",
-    "specVersion": 3
+    "specVersion": 3,
+    "securityDefinitions": {
+      "session": {
+        "type": "apiKey",
+        "name": "toodl_session",
+        "in": "cookie"
+      }
+    }
   },
   "routes": {
     "routesDir": "src",

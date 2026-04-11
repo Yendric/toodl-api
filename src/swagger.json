@@ -299,7 +299,13 @@
 				"additionalProperties": false
 			}
 		},
-		"securitySchemes": {}
+		"securitySchemes": {
+			"session": {
+				"type": "apiKey",
+				"name": "toodl_session",
+				"in": "cookie"
+			}
+		}
 	},
 	"info": {
 		"title": "api",
