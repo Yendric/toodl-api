@@ -2,12 +2,18 @@ import prisma from "@/prisma";
 import { DataValidationError } from "@/errors/DataValidationError";
 import { DatabaseLimitError } from "@/errors/DatabaseLimitError";
 import dayjs from "dayjs";
-import { Todo } from "@prisma/client";
+import { Todo, Prisma } from "@prisma/client";
+
+export type TodoCreateData = Partial<Omit<Todo, "id" | "userId" | "createdAt" | "updatedAt" | "startTime" | "endTime">> & {
+  subject: string;
+  startTime?: string | Date | null;
+  endTime?: string | Date | null;
+};
 
 export interface ITodoService {
   listForUser(userId: number): Promise<Todo[]>;
-  create(userId: number, data: any): Promise<Todo>;
-  update(userId: number, todoId: number, data: any): Promise<Todo>;
+  create(userId: number, data: TodoCreateData): Promise<Todo>;
+  update(userId: number, todoId: number, data: Partial<TodoCreateData>): Promise<Todo>;
   delete(userId: number, todoId: number): Promise<Todo>;
 }
 
@@ -19,10 +25,10 @@ export class TodoService implements ITodoService {
     });
   }
 
-  public async create(userId: number, data: any): Promise<Todo> {
-    let { startTime, endTime, listId, ...rest } = data;
-    startTime = startTime ? new Date(startTime) : new Date();
-    endTime = endTime ? new Date(endTime) : dayjs(startTime).add(1, "hour").toDate();
+  public async create(userId: number, data: TodoCreateData): Promise<Todo> {
+    const { startTime, endTime, listId, ...rest } = data;
+    const finalStartTime = startTime ? new Date(startTime) : new Date();
+    const finalEndTime = endTime ? new Date(endTime) : dayjs(finalStartTime).add(1, "hour").toDate();
 
     if (listId) {
       const list = await prisma.list.findFirst({
@@ -41,33 +47,31 @@ export class TodoService implements ITodoService {
     return await prisma.todo.create({
       data: {
         ...rest,
-        startTime,
-        endTime,
+        startTime: finalStartTime,
+        endTime: finalEndTime,
         listId,
         userId,
       },
     });
   }
 
-  public async update(userId: number, todoId: number, data: any): Promise<Todo> {
-    let { startTime, endTime, listId, ...rest } = data;
-    if (startTime) startTime = new Date(startTime);
-    if (endTime) endTime = new Date(endTime);
+  public async update(userId: number, todoId: number, data: Partial<TodoCreateData>): Promise<Todo> {
+    const { startTime, endTime, listId, ...rest } = data;
+    const updateData: Prisma.TodoUpdateInput = { ...rest };
+
+    if (startTime) updateData.startTime = new Date(startTime);
+    if (endTime) updateData.endTime = new Date(endTime);
 
     if (listId) {
       const list = await prisma.list.findFirst({
         where: { id: listId, userId },
       });
       if (!list) throw new DataValidationError("Lijst niet gevonden.");
+      updateData.list = { connect: { id: listId } };
     }
 
     return await prisma.todo.update({
-      data: {
-        ...rest,
-        startTime,
-        endTime,
-        listId,
-      },
+      data: updateData,
       where: {
         id: todoId,
         userId: userId,

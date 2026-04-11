@@ -52,6 +52,26 @@ interface TodoCreateRequest {
   listId?: number | null;
 }
 
+interface TodoResponse {
+  id: number;
+  subject: string;
+  description: string | null;
+  enableDeadline: boolean | null;
+  isAllDay: boolean | null;
+  location: string | null;
+  recurrenceRule: string | null;
+  startTimezone: string | null;
+  endTimezone: string | null;
+  startTime: Date | null;
+  endTime: Date | null;
+  recurrenceException: string | null;
+  done: boolean;
+  listId: number | null;
+  userId: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 @Route("todos")
 @Tags("Todo")
 @Security("session")
@@ -61,7 +81,7 @@ export class TodoController extends Controller {
   }
 
   @Get("/")
-  public async index(@Request() request: ExRequest): Promise<any[]> {
+  public async index(@Request() request: ExRequest): Promise<TodoResponse[]> {
     const userId = getAuthenticatedUserId(request);
     return await this.todoService.listForUser(userId);
   }
@@ -70,7 +90,7 @@ export class TodoController extends Controller {
   public async store(
     @Request() request: ExRequest,
     @Body() body: TodoCreateRequest,
-  ): Promise<any> {
+  ): Promise<TodoResponse> {
     const userId = getAuthenticatedUserId(request);
     return await this.todoService.create(userId, body);
   }
@@ -80,7 +100,7 @@ export class TodoController extends Controller {
     @Request() request: ExRequest,
     @Path() todoId: number,
     @Body() body: TodoCreateRequest,
-  ): Promise<any> {
+  ): Promise<TodoResponse> {
     const userId = getAuthenticatedUserId(request);
     return await this.todoService.update(userId, todoId, body);
   }

@@ -4,8 +4,8 @@ import { List } from "@prisma/client";
 
 export interface IListService {
   listForUser(userId: number): Promise<List[]>;
-  create(userId: number, data: any): Promise<List>;
-  update(userId: number, listId: number, data: any): Promise<List>;
+  create(userId: number, data: Pick<List, "name" | "color">): Promise<List>;
+  update(userId: number, listId: number, data: Partial<Pick<List, "name" | "color">>): Promise<List>;
   delete(userId: number, listId: number): Promise<List>;
 }
 
@@ -17,7 +17,7 @@ export class ListService implements IListService {
     });
   }
 
-  public async create(userId: number, data: any): Promise<List> {
+  public async create(userId: number, data: Pick<List, "name" | "color">): Promise<List> {
     const amount = await prisma.list.count({
       where: { userId },
     });
@@ -33,7 +33,7 @@ export class ListService implements IListService {
     });
   }
 
-  public async update(userId: number, listId: number, data: any): Promise<List> {
+  public async update(userId: number, listId: number, data: Partial<Pick<List, "name" | "color">>): Promise<List> {
     return await prisma.list.update({
       data,
       where: { id: listId, userId },

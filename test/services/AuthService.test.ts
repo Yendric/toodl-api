@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import welcomeMail from "@/mail/emails/welcomeMail";
 import { ToodlError } from "@/errors/ToodlError";
 import { IUserService } from "@/services/UserService";
+import { User } from "@prisma/client";
 
 jest.mock("@/prisma", () => ({
   user: {
@@ -34,7 +35,7 @@ describe("AuthService", () => {
       update: jest.fn(),
       delete: jest.fn(),
       updatePassword: jest.fn(),
-    } as any;
+    };
     authService = new AuthService(mockUserService);
   });
 
@@ -56,7 +57,7 @@ describe("AuthService", () => {
     });
 
     it("should throw error if email already exists", async () => {
-      (getUserByEmail as jest.Mock).mockResolvedValue({ id: 1, email: "test@example.com" });
+      (getUserByEmail as jest.Mock).mockResolvedValue({ id: 1, email: "test@example.com" } as User);
 
       await expect(authService.register("testuser", "test@example.com", "password"))
         .rejects.toThrow(ToodlError);
@@ -65,7 +66,7 @@ describe("AuthService", () => {
 
   describe("login", () => {
     it("should login with correct credentials", async () => {
-      const user = { id: 1, email: "test@example.com", password: "hashedPassword" } as any;
+      const user = { id: 1, email: "test@example.com", password: "hashedPassword" } as User;
       (getUserByEmail as jest.Mock).mockResolvedValue(user);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
@@ -75,7 +76,7 @@ describe("AuthService", () => {
     });
 
     it("should throw error with incorrect password", async () => {
-      const user = { id: 1, email: "test@example.com", password: "hashedPassword" } as any;
+      const user = { id: 1, email: "test@example.com", password: "hashedPassword" } as User;
       (getUserByEmail as jest.Mock).mockResolvedValue(user);
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 

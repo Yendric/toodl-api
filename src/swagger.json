@@ -124,6 +124,100 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"TodoResponse": {
+				"properties": {
+					"id": {
+						"type": "number",
+						"format": "double"
+					},
+					"subject": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string",
+						"nullable": true
+					},
+					"enableDeadline": {
+						"type": "boolean",
+						"nullable": true
+					},
+					"isAllDay": {
+						"type": "boolean",
+						"nullable": true
+					},
+					"location": {
+						"type": "string",
+						"nullable": true
+					},
+					"recurrenceRule": {
+						"type": "string",
+						"nullable": true
+					},
+					"startTimezone": {
+						"type": "string",
+						"nullable": true
+					},
+					"endTimezone": {
+						"type": "string",
+						"nullable": true
+					},
+					"startTime": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"endTime": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"recurrenceException": {
+						"type": "string",
+						"nullable": true
+					},
+					"done": {
+						"type": "boolean"
+					},
+					"listId": {
+						"type": "number",
+						"format": "double",
+						"nullable": true
+					},
+					"userId": {
+						"type": "number",
+						"format": "double"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				},
+				"required": [
+					"id",
+					"subject",
+					"description",
+					"enableDeadline",
+					"isAllDay",
+					"location",
+					"recurrenceRule",
+					"startTimezone",
+					"endTimezone",
+					"startTime",
+					"endTime",
+					"recurrenceException",
+					"done",
+					"listId",
+					"userId",
+					"createdAt",
+					"updatedAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"TodoCreateRequest": {
 				"properties": {
 					"done": {
@@ -203,6 +297,42 @@
 				},
 				"required": [
 					"subject"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ListResponse": {
+				"properties": {
+					"id": {
+						"type": "number",
+						"format": "double"
+					},
+					"name": {
+						"type": "string"
+					},
+					"color": {
+						"type": "string"
+					},
+					"userId": {
+						"type": "number",
+						"format": "double"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				},
+				"required": [
+					"id",
+					"name",
+					"color",
+					"userId",
+					"createdAt",
+					"updatedAt"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -453,7 +583,9 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"items": {},
+									"items": {
+										"$ref": "#/components/schemas/TodoResponse"
+									},
 									"type": "array"
 								}
 							}
@@ -477,7 +609,9 @@
 						"description": "Ok",
 						"content": {
 							"application/json": {
-								"schema": {}
+								"schema": {
+									"$ref": "#/components/schemas/TodoResponse"
+								}
 							}
 						}
 					}
@@ -511,7 +645,9 @@
 						"description": "Ok",
 						"content": {
 							"application/json": {
-								"schema": {}
+								"schema": {
+									"$ref": "#/components/schemas/TodoResponse"
+								}
 							}
 						}
 					}
@@ -590,7 +726,9 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"items": {},
+									"items": {
+										"$ref": "#/components/schemas/ListResponse"
+									},
 									"type": "array"
 								}
 							}
@@ -614,7 +752,9 @@
 						"description": "Ok",
 						"content": {
 							"application/json": {
-								"schema": {}
+								"schema": {
+									"$ref": "#/components/schemas/ListResponse"
+								}
 							}
 						}
 					}
@@ -648,7 +788,9 @@
 						"description": "Ok",
 						"content": {
 							"application/json": {
-								"schema": {}
+								"schema": {
+									"$ref": "#/components/schemas/ListResponse"
+								}
 							}
 						}
 					}

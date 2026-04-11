@@ -4,7 +4,6 @@ import { Request as ExRequest } from "express";
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Post,
   Request,

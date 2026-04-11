@@ -6,6 +6,7 @@ import { AuthService, IAuthService } from "./services/AuthService";
 import { ListService, IListService } from "./services/ListService";
 import { TodoService, ITodoService } from "./services/TodoService";
 import { UserService, IUserService } from "./services/UserService";
+import { Controller } from "tsoa";
 
 class IoCContainer {
   private _userService: IUserService;
@@ -20,18 +21,18 @@ class IoCContainer {
     this._todoService = new TodoService();
   }
 
-  public async get<T>(controller: { new (...args: any[]): T }): Promise<T> {
-    if (controller === AuthController) {
-      return new AuthController(this._authService) as any;
+  public async get<T extends Controller>(controller: new (...args: any[]) => T): Promise<T> {
+    if (controller === AuthController as unknown) {
+      return new AuthController(this._authService) as unknown as T;
     }
-    if (controller === ListController) {
-      return new ListController(this._listService) as any;
+    if (controller === ListController as unknown) {
+      return new ListController(this._listService) as unknown as T;
     }
-    if (controller === TodoController) {
-      return new TodoController(this._todoService) as any;
+    if (controller === TodoController as unknown) {
+      return new TodoController(this._todoService) as unknown as T;
     }
-    if (controller === UserController) {
-      return new UserController(this._userService) as any;
+    if (controller === UserController as unknown) {
+      return new UserController(this._userService) as unknown as T;
     }
 
     return new controller();

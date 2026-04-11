@@ -61,7 +61,7 @@ export class AuthService implements IAuthService {
 
     let user = await getUserByEmail(payload.email);
     if (!user) {
-      user = await prisma.user.create({ data: { email: payload.email, username: payload.name } });
+      user = await prisma.user.create({ data: { email: payload.email.toLowerCase(), username: payload.name } });
       await this.userService.createDefaults(user.id);
       welcomeMail(user);
     }

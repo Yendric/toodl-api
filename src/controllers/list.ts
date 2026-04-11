@@ -26,6 +26,15 @@ interface ListRequest {
   color: string;
 }
 
+interface ListResponse {
+  id: number;
+  name: string;
+  color: string;
+  userId: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 @Route("lists")
 @Tags("List")
 @Security("session")
@@ -35,7 +44,7 @@ export class ListController extends Controller {
   }
 
   @Get("/")
-  public async index(@Request() request: ExRequest): Promise<any[]> {
+  public async index(@Request() request: ExRequest): Promise<ListResponse[]> {
     const userId = getAuthenticatedUserId(request);
     return await this.listService.listForUser(userId);
   }
@@ -44,7 +53,7 @@ export class ListController extends Controller {
   public async store(
     @Request() request: ExRequest,
     @Body() body: ListRequest,
-  ): Promise<any> {
+  ): Promise<ListResponse> {
     const userId = getAuthenticatedUserId(request);
     return await this.listService.create(userId, body);
   }
@@ -54,7 +63,7 @@ export class ListController extends Controller {
     @Request() request: ExRequest,
     @Path() listId: number,
     @Body() body: ListRequest,
-  ): Promise<any> {
+  ): Promise<ListResponse> {
     const userId = getAuthenticatedUserId(request);
     return await this.listService.update(userId, listId, body);
   }

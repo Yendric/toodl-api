@@ -5,11 +5,26 @@ import bcrypt from "bcryptjs";
 import { ToodlError } from "@/errors/ToodlError";
 import { User } from "@prisma/client";
 
+export interface UserUpdateData {
+  email?: string;
+  username?: string;
+  dailyNotification?: boolean;
+  reminderNotification?: boolean;
+  nowNotification?: boolean;
+  icalUrls?: string[];
+}
+
+export interface PasswordUpdateData {
+  newPassword: string;
+  confirmPassword: string;
+  oldPassword?: string;
+}
+
 export interface IUserService {
   createDefaults(userId: number): Promise<void>;
-  update(userId: number, data: any): Promise<User>;
+  update(userId: number, data: UserUpdateData): Promise<User>;
   delete(user: User): Promise<void>;
-  updatePassword(user: User, data: any): Promise<void>;
+  updatePassword(user: User, data: PasswordUpdateData): Promise<void>;
 }
 
 export class UserService implements IUserService {
@@ -60,14 +75,15 @@ export class UserService implements IUserService {
     });
   }
 
-  public async update(userId: number, data: any): Promise<User> {
+  public async update(userId: number, data: UserUpdateData): Promise<User> {
+    const { email, ...rest } = data;
     return await prisma.user.update({
       where: {
         id: userId,
       },
       data: {
-        ...data,
-        email: data.email.toLowerCase(),
+        ...rest,
+        email: email ? email.toLowerCase() : undefined,
       },
     });
   }
@@ -77,7 +93,7 @@ export class UserService implements IUserService {
     removalMail(user);
   }
 
-  public async updatePassword(user: User, data: any): Promise<void> {
+  public async updatePassword(user: User, data: PasswordUpdateData): Promise<void> {
     const { newPassword, confirmPassword, oldPassword } = data;
 
     if (newPassword !== confirmPassword) {
