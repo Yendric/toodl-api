@@ -1,6 +1,6 @@
 import { DataValidationError } from "#/errors/DataValidationError.js";
+import { type Store, type StoreCategoryOrder } from "#/generated/prisma/client.js";
 import prisma from "#/prisma.js";
-import { type Store, type StoreCategoryOrder } from "@prisma/client";
 
 export interface IStoreService {
   listForUser(userId: number): Promise<Store[]>;

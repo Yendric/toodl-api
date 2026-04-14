@@ -1,7 +1,7 @@
 import { ToodlError } from "#/errors/ToodlError.js";
+import { Prisma, type User } from "#/generated/prisma/client.js";
 import removalMail from "#/mail/emails/removalMail.js";
 import prisma from "#/prisma.js";
-import { Prisma, type User } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import dayjs from "dayjs";
 

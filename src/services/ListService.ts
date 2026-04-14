@@ -1,6 +1,6 @@
 import { DatabaseLimitError } from "#/errors/DatabaseLimitError.js";
 import prisma from "#/prisma.js";
-import { type List } from "@prisma/client";
+import { type List } from "#/generated/prisma/client.js";
 
 export interface IListService {
   listForUser(userId: number): Promise<List[]>;

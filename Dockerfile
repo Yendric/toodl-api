@@ -1,4 +1,5 @@
 FROM node:24-alpine AS base
+RUN apk add --no-cache openssl libc6-compat
 RUN corepack enable
 WORKDIR /app
 
@@ -9,8 +10,8 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN pnpm build
 RUN pnpm dlx prisma generate
+RUN pnpm build
 
 FROM base AS prod-deps
 COPY package.json pnpm-lock.yaml ./
@@ -22,6 +23,7 @@ FROM base AS development
 ENV NODE_ENV=development
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+RUN pnpm dlx prisma generate
 EXPOSE 3001
 CMD ["pnpm", "dev"]
 

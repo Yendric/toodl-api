@@ -1,8 +1,8 @@
-import { ListType } from "@prisma/client";
 import { type IListService } from "#/services/ListService.js";
 import { getAuthenticatedUserId } from "#/utils/auth.js";
 import { type Request as ExRequest } from "express";
 import { Body, Controller, Delete, Get, Path, Post, Request, Route, Security, Tags } from "tsoa";
+import type { ListType } from "../generated/prisma/enums.js";
 
 interface ListRequest {
   /**

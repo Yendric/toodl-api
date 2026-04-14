@@ -1,4 +1,4 @@
-import { type Todo } from "@prisma/client";
+import { type Todo } from "#/generated/prisma/client.js";
 import dayjs from "dayjs";
 import { sendMail } from "../index.js";
 

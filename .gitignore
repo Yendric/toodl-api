@@ -44,3 +44,4 @@ sessions
 # Generated files
 src/routes.ts
 src/swagger.json
+src/generated/

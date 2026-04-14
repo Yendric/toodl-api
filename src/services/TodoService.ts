@@ -1,7 +1,7 @@
 import { DataValidationError } from "#/errors/DataValidationError.js";
 import { DatabaseLimitError } from "#/errors/DatabaseLimitError.js";
+import { Prisma, type Todo } from "#/generated/prisma/client.js";
 import prisma from "#/prisma.js";
-import { Prisma, type Todo } from "@prisma/client";
 import dayjs from "dayjs";
 import { generateKeyBetween } from "fractional-indexing";
 

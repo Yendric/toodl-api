@@ -1,14 +1,27 @@
+import { predictCategoryDailyLimiter, predictCategoryMinuteLimiter } from "#/middleware/rateLimiter.js";
 import { type ICategoryService } from "#/services/CategoryService.js";
 import { getAuthenticatedUserId } from "#/utils/auth.js";
 import { type Request as ExRequest } from "express";
-import { Body, Controller, Delete, Get, Path, Post, Request, Route, Security, Tags } from "tsoa";
+import { Body, Controller, Delete, Get, Middlewares, Path, Post, Request, Route, Security, Tags } from "tsoa";
 
 interface CategoryRequest {
   /**
    * @minLength 1
-   * @maxLength 50
+   * @maxLength 300
    */
   name: string;
+}
+
+interface CategoryPredictRequest {
+  /**
+   * @minLength 1
+   * @maxLength 300
+   */
+  itemName: string;
+}
+
+interface CategoryPredictResponse {
+  categoryName: string | null;
 }
 
 interface CategoryResponse {
@@ -25,6 +38,16 @@ interface CategoryResponse {
 export class CategoryController extends Controller {
   constructor(private categoryService: ICategoryService) {
     super();
+  }
+
+  @Post("/predict")
+  @Middlewares([predictCategoryMinuteLimiter, predictCategoryDailyLimiter])
+  public async predict(
+    @Request() request: ExRequest,
+    @Body() body: CategoryPredictRequest,
+  ): Promise<CategoryPredictResponse> {
+    const userId = getAuthenticatedUserId(request);
+    return await this.categoryService.predictCategory(userId, body.itemName);
   }
 
   @Get("/")

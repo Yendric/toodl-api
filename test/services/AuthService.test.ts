@@ -3,7 +3,7 @@ import welcomeMail from "#/mail/emails/welcomeMail.js";
 import { AuthService } from "#/services/AuthService.js";
 import { type IUserService } from "#/services/UserService.js";
 import { getUserByEmail } from "#/utils/database.js";
-import { type User } from "@prisma/client";
+import { type User } from "#/generated/prisma/client.js";
 import bcrypt from "bcryptjs";
 import { type Mock, type Mocked, vi } from "vitest";
 

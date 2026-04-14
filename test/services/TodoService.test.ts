@@ -1,4 +1,3 @@
-import { DatabaseLimitError } from "#/errors/DatabaseLimitError.js";
 import { DataValidationError } from "#/errors/DataValidationError.js";
 import prisma from "#/prisma.js";
 import { TodoService } from "#/services/TodoService.js";
@@ -63,8 +62,8 @@ describe("TodoService", () => {
 
       const result = await todoService.listForUser(userId, 100);
 
-      expect(result[0].id).toBe(2);
-      expect(result[1].id).toBe(1);
+      expect(result?.[0]?.id).toBe(2);
+      expect(result?.[1]?.id).toBe(1);
     });
 
     it("should throw error if store not found", async () => {

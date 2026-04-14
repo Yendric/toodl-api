@@ -1,6 +1,6 @@
 import { ToodlError } from "#/errors/ToodlError.js";
 import { getUserById } from "#/utils/database.js";
-import { type User } from "@prisma/client";
+import { type User } from "#/generated/prisma/client.js";
 import { type Request } from "express";
 
 export async function expressAuthentication(request: Request, securityName: string): Promise<User> {

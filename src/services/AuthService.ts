@@ -1,7 +1,7 @@
 import { ToodlError } from "#/errors/ToodlError.js";
 import welcomeMail from "#/mail/emails/welcomeMail.js";
 import { getUserByEmail } from "#/utils/database.js";
-import { type User } from "@prisma/client";
+import { type User } from "#/generated/prisma/client.js";
 import bcrypt from "bcryptjs";
 import { OAuth2Client } from "google-auth-library";
 import { type IUserService } from "./UserService.js";
