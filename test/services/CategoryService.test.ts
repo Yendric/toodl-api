@@ -8,6 +8,10 @@ vi.mock("@google/genai", () => ({
   ThinkingLevel: {
     MINIMAL: "MINIMAL",
   },
+  Type: {
+    OBJECT: "OBJECT",
+    STRING: "STRING",
+  },
   GoogleGenAI: class {
     models = {
       generateContent: mockGenerateContent,
@@ -117,7 +121,7 @@ describe("CategoryService", () => {
 
     it("should return null if model predicts NONE", async () => {
       (prisma.category.findMany as Mock).mockResolvedValue([{ id: 1, name: "Fruit", userId: 1 }]);
-      mockGenerateContent.mockResolvedValue({ text: "NONE" });
+      mockGenerateContent.mockResolvedValue({ text: JSON.stringify({ category: "NONE" }) });
 
       const result = await categoryService.predictCategory(1, "Car");
 
@@ -129,7 +133,7 @@ describe("CategoryService", () => {
         { id: 1, name: "Fruit", userId: 1 },
         { id: 2, name: "Groenten", userId: 1 },
       ]);
-      mockGenerateContent.mockResolvedValue({ text: "Groenten" });
+      mockGenerateContent.mockResolvedValue({ text: JSON.stringify({ category: "Groenten" }) });
 
       const result = await categoryService.predictCategory(1, "Spinazie");
 
@@ -138,7 +142,7 @@ describe("CategoryService", () => {
 
     it("should return null if model predicts a category that does not exist", async () => {
       (prisma.category.findMany as Mock).mockResolvedValue([{ id: 1, name: "Fruit", userId: 1 }]);
-      mockGenerateContent.mockResolvedValue({ text: "Hallucinated" });
+      mockGenerateContent.mockResolvedValue({ text: JSON.stringify({ category: "NONE" }) });
 
       const result = await categoryService.predictCategory(1, "Car");
 

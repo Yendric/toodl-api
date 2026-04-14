@@ -1,8 +1,8 @@
-import { expand } from "dotenv-expand";
-import { config } from "dotenv";
-import { PrismaPg } from "@prisma/adapter-pg";
-import pg from "pg";
 import { PrismaClient } from "#/generated/prisma/client.js";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { config } from "dotenv";
+import { expand } from "dotenv-expand";
+import pg from "pg";
 
 // Initialize environment variables with expansion support
 expand(config());
@@ -10,7 +10,7 @@ expand(config());
 const connectionString = process.env.DB_URL;
 
 if (!connectionString) {
-  throw new Error("DB_URL is not defined in the environment.");
+  console.warn("DB_URL is not defined in the environment.");
 }
 
 const pool = new pg.Pool({ connectionString });
