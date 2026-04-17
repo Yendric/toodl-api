@@ -71,11 +71,13 @@ describe("TodoService", () => {
   describe("listByList", () => {
     const userId = 1;
     const listId = 10;
-    
+
     it("should return sorted todos for a specific list without storeId", async () => {
       await prisma.list.create({ data: { id: listId, name: "List 1", userId } });
-      await prisma.todo.create({ data: { id: 1, subject: "Todo 1", done: false, position: "a0", userId, listId, categoryId: null } });
-      
+      await prisma.todo.create({
+        data: { id: 1, subject: "Todo 1", done: false, position: "a0", userId, listId, categoryId: null },
+      });
+
       const result = await todoService.listByList(userId, listId);
       expect(result).toHaveLength(1);
       expect(result[0]?.id).toBe(1);
@@ -84,10 +86,12 @@ describe("TodoService", () => {
     it("should return sorted todos for a specific list with storeId", async () => {
       await prisma.category.create({ data: { id: 1, name: "Cat 1", userId } });
       await prisma.list.create({ data: { id: listId, name: "List 1", userId } });
-      await prisma.todo.create({ data: { id: 1, subject: "Todo 1", done: false, position: "a0", userId, listId, categoryId: 1 } });
+      await prisma.todo.create({
+        data: { id: 1, subject: "Todo 1", done: false, position: "a0", userId, listId, categoryId: 1 },
+      });
       await prisma.store.create({ data: { id: 100, userId, name: "Store 1" } });
       await prisma.storeCategoryOrder.create({ data: { storeId: 100, categoryId: 1, position: 0 } });
-      
+
       const result = await todoService.listByList(userId, listId, 100);
       expect(result).toHaveLength(1);
       expect(result[0]?.id).toBe(1);
@@ -129,19 +133,23 @@ describe("TodoService", () => {
 
     it("should throw error if list has 100 or more todos", async () => {
       await prisma.list.create({ data: { id: 10, name: "List 1", userId } });
-      
+
       for (let i = 1; i <= 100; i++) {
-        await prisma.todo.create({ data: { id: i, subject: `Todo ${i}`, done: false, position: `a${i}`, userId, listId: 10 } });
+        await prisma.todo.create({
+          data: { id: i, subject: `Todo ${i}`, done: false, position: `a${i}`, userId, listId: 10 },
+        });
       }
 
       await expect(todoService.create(userId, { subject: "Max", listId: 10 })).rejects.toThrow(DatabaseLimitError);
     });
 
     it("should generate a position if none is provided based on last todo", async () => {
-      await prisma.todo.create({ data: { id: 1, subject: "Todo 1", done: false, position: "a0", userId, listId: null } });
+      await prisma.todo.create({
+        data: { id: 1, subject: "Todo 1", done: false, position: "a0", userId, listId: null },
+      });
 
       const result = await todoService.create(userId, { subject: "Test Todo 2" });
-      
+
       expect(result.position).toBeDefined();
       expect(result.position > "a0").toBe(true);
     });

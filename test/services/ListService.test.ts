@@ -52,9 +52,9 @@ describe("ListService", () => {
   describe("update", () => {
     it("should update list", async () => {
       await prisma.list.create({ data: { id: 1, name: "Old Name", userId: 1 } });
-      
+
       const result = await listService.update(1, 1, { name: "New Name", color: "#ff0000" });
-      
+
       expect(result.name).toBe("New Name");
       expect(result.color).toBe("#ff0000");
 

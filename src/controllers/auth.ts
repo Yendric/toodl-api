@@ -51,7 +51,7 @@ interface AuthResponse {
 export class AuthController extends Controller {
   constructor(
     private authService: AuthService,
-    private loggingService: LoggingService
+    private loggingService: LoggingService,
   ) {
     super();
   }

@@ -21,7 +21,7 @@ describe("MailService", () => {
     loggingService = new LoggingService();
     vi.spyOn(loggingService, "success").mockImplementation(() => {});
     vi.spyOn(loggingService, "error").mockImplementation(() => {});
-    
+
     mailService = new MailService(loggingService);
     transporterMock = (nodemailer.createTransport as any).mock.results[0].value;
   });
@@ -69,7 +69,7 @@ describe("MailService", () => {
   it("should log an error if sending fails", async () => {
     transporterMock.sendMail.mockRejectedValueOnce(new Error("SMTP Error"));
     const user = { email: "test@example.com", username: "testuser" };
-    
+
     await mailService.sendWelcomeMail(user);
 
     expect(loggingService.error).toHaveBeenCalledWith(expect.stringContaining("Fout"));

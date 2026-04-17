@@ -19,7 +19,7 @@ describe("LoggingService", () => {
     it("should call console.info with formatted message", () => {
       const message = "Test message";
       loggingService.log(message);
-      
+
       expect(consoleInfoSpy).toHaveBeenCalledTimes(1);
       const callArgs = consoleInfoSpy.mock.calls[0][0];
       expect(callArgs).toContain(message);
@@ -31,7 +31,7 @@ describe("LoggingService", () => {
     it("should call console.info with bgGreen formatted message", () => {
       const message = "Announce message";
       loggingService.announce(message);
-      
+
       expect(consoleInfoSpy).toHaveBeenCalledTimes(1);
       const callArgs = consoleInfoSpy.mock.calls[0][0];
       expect(callArgs).toContain(message);
@@ -43,7 +43,7 @@ describe("LoggingService", () => {
     it("should call console.info with green formatted message", () => {
       const message = "Success message";
       loggingService.success(message);
-      
+
       expect(consoleInfoSpy).toHaveBeenCalledTimes(1);
       const callArgs = consoleInfoSpy.mock.calls[0][0];
       expect(callArgs).toContain(message);
@@ -55,7 +55,7 @@ describe("LoggingService", () => {
     it("should call console.info with red formatted message", () => {
       const message = "Error message";
       loggingService.error(message);
-      
+
       expect(consoleInfoSpy).toHaveBeenCalledTimes(1);
       const callArgs = consoleInfoSpy.mock.calls[0][0];
       expect(callArgs).toContain(message);

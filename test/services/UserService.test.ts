@@ -99,9 +99,9 @@ describe("UserService", () => {
         data: { id: 1, email: "test@example.com", password: "oldHashedPassword", username: "test" },
       });
 
-      await expect(userService.updatePassword(user as any, { newPassword: "new", confirmPassword: "new" })).rejects.toThrow(
-        ToodlError,
-      );
+      await expect(
+        userService.updatePassword(user as any, { newPassword: "new", confirmPassword: "new" }),
+      ).rejects.toThrow(ToodlError);
     });
 
     it("should throw error if old password does not match", async () => {

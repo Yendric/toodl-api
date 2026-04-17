@@ -30,12 +30,14 @@ cron.schedule("0 18 * * *", () => {
           return todo.enableDeadline && todoDate.isSame(tomorrow, "day");
         });
         if (!todos.length) continue;
-        await iocContainer.get(MailService).sendTodoMail(
-          todos,
-          user,
-          "Todo's voor morgen",
-          "morgen heeft u de volgende todo's gepland, vergeet ze niet:",
-        );
+        await iocContainer
+          .get(MailService)
+          .sendTodoMail(
+            todos,
+            user,
+            "Todo's voor morgen",
+            "morgen heeft u de volgende todo's gepland, vergeet ze niet:",
+          );
       }
     } catch (err) {
       iocContainer.get(LoggingService).error("Error in daily email cronjob: " + String(err));
@@ -68,12 +70,14 @@ cron.schedule("* * * * *", () => {
           return todo.enableDeadline && todoDate.isSame(now, "minute");
         });
         if (currentTodos.length) {
-          await iocContainer.get(MailService).sendTodoMail(
-            currentTodos,
-            user,
-            "U heeft een todo gepland",
-            "op dit moment heeft u de volgende todo('s) gepland, vergeet ze niet:",
-          );
+          await iocContainer
+            .get(MailService)
+            .sendTodoMail(
+              currentTodos,
+              user,
+              "U heeft een todo gepland",
+              "op dit moment heeft u de volgende todo('s) gepland, vergeet ze niet:",
+            );
         }
 
         const quartreTodos = user.todos.filter((todo) => {
@@ -82,12 +86,14 @@ cron.schedule("* * * * *", () => {
           return todo.enableDeadline && todoDate.diff(now, "minute") === 15;
         });
         if (quartreTodos.length) {
-          await iocContainer.get(MailService).sendTodoMail(
-            quartreTodos,
-            user,
-            "Todos over een kwartier",
-            "over een kwartier heeft u de volgende todo('s) gepland, vergeet ze niet:",
-          );
+          await iocContainer
+            .get(MailService)
+            .sendTodoMail(
+              quartreTodos,
+              user,
+              "Todos over een kwartier",
+              "over een kwartier heeft u de volgende todo('s) gepland, vergeet ze niet:",
+            );
         }
       }
     } catch (err) {
