@@ -54,7 +54,6 @@
     "@types/bcryptjs": "^2.4.2",
     "@types/cors": "^2.8.13",
     "@types/express": "^5",
-    "@types/express-rate-limit": "^6.0.2",
     "@types/express-session": "^1.17.7",
     "@types/node": "^24.0.0",
     "@types/node-cron": "^3.0.8",
