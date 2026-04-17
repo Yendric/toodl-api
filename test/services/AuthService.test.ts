@@ -1,69 +1,59 @@
 import { ToodlError } from "#/errors/ToodlError.js";
-import welcomeMail from "#/mail/emails/welcomeMail.js";
 import { AuthService } from "#/services/AuthService.js";
-import { type IUserService } from "#/services/UserService.js";
-import { getUserByEmail } from "#/utils/database.js";
+import { UserService } from "#/services/UserService.js";
 import { type User } from "#/generated/prisma/client.js";
 import bcrypt from "bcryptjs";
-import { type Mock, type Mocked, vi } from "vitest";
+import { type Mock, vi } from "vitest";
+import prisma from "#/prisma.js";
+import { MailService } from "#/services/MailService.js";
+import { LoggingService } from "#/services/LoggingService.js";
 
-vi.mock("#/prisma.js", () => ({
-  default: {
-    user: {
-      create: vi.fn(),
-    },
-  },
-}));
-
-vi.mock("#/utils/database.js", () => ({
-  getUserByEmail: vi.fn(),
-}));
-
-vi.mock("bcryptjs", () => ({
-  default: {
-    hash: vi.fn(),
-    compare: vi.fn(),
-  },
-}));
-
-vi.mock("#/mail/emails/welcomeMail.js", () => ({ default: vi.fn() }));
+vi.mock("google-auth-library", () => {
+  return {
+    OAuth2Client: class {
+      verifyIdToken = vi.fn().mockImplementation(async ({ idToken }) => {
+        if (idToken === "valid-token-new") {
+          return { getPayload: () => ({ email: "new@google.com", name: "New Google User" }) };
+        } else if (idToken === "valid-token-existing") {
+          return { getPayload: () => ({ email: "existing@google.com", name: "Existing Google User" }) };
+        } else {
+          return { getPayload: () => null };
+        }
+      });
+    }
+  };
+});
 
 describe("AuthService", () => {
   let authService: AuthService;
-  let mockUserService: Mocked<IUserService>;
+  let userService: UserService;
+  let mailService: MailService;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUserService = {
-      createUserWithDefaults: vi.fn().mockImplementation((data) => Promise.resolve({ id: 1, ...data })),
-      update: vi.fn(),
-      delete: vi.fn(),
-      updatePassword: vi.fn(),
-    };
-    authService = new AuthService(mockUserService);
+    mailService = new MailService(new LoggingService());
+    mailService.sendWelcomeMail = vi.fn() as any;
+    mailService.sendRemovalMail = vi.fn() as any;
+    userService = new UserService(mailService);
+    authService = new AuthService(userService, mailService);
   });
 
   describe("register", () => {
     it("should register a new user", async () => {
       const userData = { username: "testuser", email: "test@example.com", password: "password123" };
-      (getUserByEmail as Mock).mockResolvedValue(null);
-      (bcrypt.hash as Mock).mockResolvedValue("hashedPassword");
 
       const result = await authService.register(userData.username, userData.email, userData.password);
 
-      expect(getUserByEmail).toHaveBeenCalledWith(userData.email);
-      expect(bcrypt.hash).toHaveBeenCalledWith(userData.password, 10);
-      expect(mockUserService.createUserWithDefaults).toHaveBeenCalledWith({
-        username: userData.username,
-        email: userData.email,
-        password: "hashedPassword",
-      });
-      expect(welcomeMail).toHaveBeenCalled();
-      expect(result.id).toBe(1);
+      expect(mailService.sendWelcomeMail).toHaveBeenCalled();
+      
+      const savedUser = await prisma.user.findUnique({ where: { email: userData.email } });
+      expect(savedUser).toBeDefined();
+      expect(savedUser?.username).toBe(userData.username);
+      expect(await bcrypt.compare(userData.password, savedUser!.password!)).toBe(true);
     });
 
     it("should throw error if email already exists", async () => {
-      (getUserByEmail as Mock).mockResolvedValue({ id: 1, email: "test@example.com" } as User);
+      await prisma.user.create({ data: { username: "existing", email: "test@example.com" } });
 
       await expect(authService.register("testuser", "test@example.com", "password")).rejects.toThrow(ToodlError);
     });
@@ -71,21 +61,41 @@ describe("AuthService", () => {
 
   describe("login", () => {
     it("should login with correct credentials", async () => {
-      const user = { id: 1, email: "test@example.com", password: "hashedPassword" } as User;
-      (getUserByEmail as Mock).mockResolvedValue(user);
-      (bcrypt.compare as Mock).mockResolvedValue(true);
+      const hashedPassword = await bcrypt.hash("password123", 10);
+      const user = await prisma.user.create({ data: { username: "loginuser", email: "testlogin@example.com", password: hashedPassword } });
 
-      const result = await authService.login("test@example.com", "password123");
+      const result = await authService.login("testlogin@example.com", "password123");
 
-      expect(result).toEqual(user);
+      expect(result.id).toEqual(user.id);
     });
 
     it("should throw error with incorrect password", async () => {
-      const user = { id: 1, email: "test@example.com", password: "hashedPassword" } as User;
-      (getUserByEmail as Mock).mockResolvedValue(user);
-      (bcrypt.compare as Mock).mockResolvedValue(false);
+      const hashedPassword = await bcrypt.hash("realpassword", 10);
+      await prisma.user.create({ data: { username: "loginuser", email: "testlogin2@example.com", password: hashedPassword } });
 
-      await expect(authService.login("test@example.com", "wrongpassword")).rejects.toThrow(ToodlError);
+      await expect(authService.login("testlogin2@example.com", "wrongpassword")).rejects.toThrow(ToodlError);
+    });
+  });
+
+  describe("google", () => {
+    it("should register a new user on google login if not exists", async () => {
+      const user = await authService.google("valid-token-new");
+      expect(user.email).toBe("new@google.com");
+      expect(mailService.sendWelcomeMail).toHaveBeenCalled();
+
+      const savedUser = await prisma.user.findUnique({ where: { email: "new@google.com" } });
+      expect(savedUser).toBeDefined();
+    });
+
+    it("should login user if google user already exists", async () => {
+      await prisma.user.create({ data: { username: "Existing User", email: "existing@google.com" } });
+      
+      const user = await authService.google("valid-token-existing");
+      expect(user.email).toBe("existing@google.com");
+    });
+
+    it("should throw error if google payload is invalid", async () => {
+      await expect(authService.google("invalid-token")).rejects.toThrow(ToodlError);
     });
   });
 });

@@ -1,28 +1,7 @@
 import { DataValidationError } from "#/errors/DataValidationError.js";
 import prisma from "#/prisma.js";
 import { StoreService } from "#/services/StoreService.js";
-import { vi, type Mock } from "vitest";
-
-vi.mock("#/prisma.js", () => ({
-  default: {
-    $transaction: vi.fn(),
-    store: {
-      findMany: vi.fn(),
-      findFirst: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-    },
-    category: {
-      findMany: vi.fn(),
-    },
-    storeCategoryOrder: {
-      findMany: vi.fn(),
-      deleteMany: vi.fn(),
-      createMany: vi.fn(),
-    },
-  },
-}));
+import { vi } from "vitest";
 
 describe("StoreService", () => {
   let storeService: StoreService;
@@ -34,34 +13,71 @@ describe("StoreService", () => {
 
   describe("listForUser", () => {
     it("should return stores for a user", async () => {
-      const mockStores = [{ id: 1, name: "Aldi", userId: 1 }];
-      (prisma.store.findMany as Mock).mockResolvedValue(mockStores);
+      const mockStore = await prisma.store.create({ data: { id: 1, name: "Aldi", userId: 1 } });
 
       const result = await storeService.listForUser(1);
 
-      expect(prisma.store.findMany).toHaveBeenCalledWith({
-        where: { userId: 1 },
-        orderBy: { name: "asc" },
-      });
-      expect(result).toEqual(mockStores);
+      expect(result).toEqual([mockStore]);
+    });
+  });
+
+  describe("create", () => {
+    it("should create a store", async () => {
+      const result = await storeService.create(1, { name: "Colruyt" });
+      
+      expect(result.name).toBe("Colruyt");
+      expect(result.userId).toBe(1);
+
+      const dbStore = await prisma.store.findUnique({ where: { id: result.id } });
+      expect(dbStore).toBeDefined();
+    });
+  });
+
+  describe("update", () => {
+    it("should update a store", async () => {
+      const store = await prisma.store.create({ data: { id: 1, name: "Aldi", userId: 1 } });
+      
+      const result = await storeService.update(1, 1, { name: "Delhaize" });
+      
+      expect(result.name).toBe("Delhaize");
+
+      const dbStore = await prisma.store.findUnique({ where: { id: 1 } });
+      expect(dbStore?.name).toBe("Delhaize");
+    });
+  });
+
+  describe("delete", () => {
+    it("should delete a store", async () => {
+      await prisma.store.create({ data: { id: 1, name: "Aldi", userId: 1 } });
+      
+      await storeService.delete(1, 1);
+      
+      const dbStore = await prisma.store.findUnique({ where: { id: 1 } });
+      expect(dbStore).toBeNull();
+    });
+  });
+
+  describe("getCategoryOrder", () => {
+    it("should return category order for a store", async () => {
+      await prisma.store.create({ data: { id: 1, name: "Aldi", userId: 1 } });
+      await prisma.storeCategoryOrder.create({ data: { storeId: 1, categoryId: 10, position: 0 } });
+
+      const result = await storeService.getCategoryOrder(1, 1);
+      
+      expect(result).toHaveLength(1);
+      expect(result[0]?.categoryId).toBe(10);
+    });
+
+    it("should throw error if store not found", async () => {
+      await expect(storeService.getCategoryOrder(1, 999)).rejects.toThrow(DataValidationError);
     });
   });
 
   describe("updateCategoryOrder", () => {
     it("should update category order for a store within a transaction if ownership is verified", async () => {
-      const mockStore = { id: 1, userId: 1, name: "Aldi" };
-      (prisma.store.findFirst as Mock).mockResolvedValue(mockStore);
-      (prisma.category.findMany as Mock).mockResolvedValue([{ id: 1 }, { id: 2 }]);
-
-      (prisma.$transaction as Mock).mockImplementation(async (callback: (tx: any) => Promise<unknown>) => {
-        const tx = {
-          storeCategoryOrder: {
-            deleteMany: vi.fn().mockResolvedValue({}),
-            createMany: vi.fn().mockResolvedValue({}),
-          },
-        };
-        return await callback(tx);
-      });
+      await prisma.store.create({ data: { id: 1, userId: 1, name: "Aldi" } });
+      await prisma.category.create({ data: { id: 1, name: "Cat 1", userId: 1 } });
+      await prisma.category.create({ data: { id: 2, name: "Cat 2", userId: 1 } });
 
       const order = [
         { categoryId: 1, position: 0 },
@@ -69,20 +85,23 @@ describe("StoreService", () => {
       ];
       await storeService.updateCategoryOrder(1, 1, order);
 
-      expect(prisma.store.findFirst).toHaveBeenCalledWith({ where: { id: 1, userId: 1 } });
-      expect(prisma.category.findMany).toHaveBeenCalled();
-      expect(prisma.$transaction).toHaveBeenCalled();
+      const orders = await prisma.storeCategoryOrder.findMany({ where: { storeId: 1 } });
+      expect(orders).toHaveLength(2);
+      expect(orders).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ storeId: 1, categoryId: 1, position: 0 }),
+          expect.objectContaining({ storeId: 1, categoryId: 2, position: 1 }),
+        ]),
+      );
     });
 
     it("should throw DataValidationError if store not found", async () => {
-      (prisma.store.findFirst as Mock).mockResolvedValue(null);
-
       await expect(storeService.updateCategoryOrder(1, 1, [])).rejects.toThrow(DataValidationError);
     });
 
     it("should throw DataValidationError if categories don't belong to user", async () => {
-      (prisma.store.findFirst as Mock).mockResolvedValue({ id: 1, userId: 1 });
-      (prisma.category.findMany as Mock).mockResolvedValue([{ id: 1 }]); // Only 1 found, but 2 requested
+      await prisma.store.create({ data: { id: 1, userId: 1, name: "Aldi" } });
+      await prisma.category.create({ data: { id: 1, name: "Cat 1", userId: 1 } });
 
       const order = [
         { categoryId: 1, position: 0 },

@@ -2,13 +2,9 @@ import { app } from "#/index.js";
 import request from "supertest";
 
 describe("GET /v1/auth/user_data", () => {
-  it("should say logged out", () => {
-    request(app)
-      .get("/v1/auth/user_data")
-      .end((err, res) => {
-        expect(res.status).toBe(401);
-        expect(err).toBeFalsy();
-        expect(res.body.message).toContain("Gelieve u eerst in te loggen");
-      });
+  it("should say logged out", async () => {
+    const res = await request(app).get("/v1/auth/user_data");
+    expect(res.status).toBe(401);
+    expect(res.body.message).toContain("Gelieve u eerst in te loggen");
   });
 });

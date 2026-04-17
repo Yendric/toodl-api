@@ -1,6 +1,6 @@
 import prisma from "#/prisma.js";
 import { CategoryService } from "#/services/CategoryService.js";
-import { vi, type Mock } from "vitest";
+import { vi } from "vitest";
 
 const mockGenerateContent = vi.fn();
 
@@ -16,17 +16,6 @@ vi.mock("@google/genai", () => ({
     models = {
       generateContent: mockGenerateContent,
     };
-  },
-}));
-
-vi.mock("#/prisma.js", () => ({
-  default: {
-    category: {
-      findMany: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-    },
   },
 }));
 
@@ -46,66 +35,50 @@ describe("CategoryService", () => {
 
   describe("listForUser", () => {
     it("should return categories for a user", async () => {
-      const mockCategories = [{ id: 1, name: "Groceries", userId: 1 }];
-      (prisma.category.findMany as Mock).mockResolvedValue(mockCategories);
+      const mockCategory = await prisma.category.create({ data: { id: 1, name: "Groceries", userId: 1 } });
 
       const result = await categoryService.listForUser(1);
 
-      expect(prisma.category.findMany).toHaveBeenCalledWith({
-        where: { userId: 1 },
-        orderBy: { name: "asc" },
-      });
-      expect(result).toEqual(mockCategories);
+      expect(result).toEqual([mockCategory]);
     });
   });
 
   describe("create", () => {
     it("should create a category", async () => {
-      const mockCategory = { id: 1, name: "Groceries", userId: 1 };
-      (prisma.category.create as Mock).mockResolvedValue(mockCategory);
-
       const result = await categoryService.create(1, { name: "Groceries" });
 
-      expect(prisma.category.create).toHaveBeenCalledWith({
-        data: { name: "Groceries", userId: 1 },
-      });
-      expect(result).toEqual(mockCategory);
+      const dbCategory = await prisma.category.findUnique({ where: { id: result.id } });
+      expect(dbCategory).toMatchObject({ name: "Groceries", userId: 1 });
+      expect(result).toMatchObject({ name: "Groceries", userId: 1 });
     });
   });
 
   describe("update", () => {
     it("should update a category", async () => {
-      const mockCategory = { id: 1, name: "Drinks", userId: 1 };
-      (prisma.category.update as Mock).mockResolvedValue(mockCategory);
+      await prisma.category.create({ data: { id: 1, name: "Groceries", userId: 1 } });
 
       const result = await categoryService.update(1, 1, { name: "Drinks" });
 
-      expect(prisma.category.update).toHaveBeenCalledWith({
-        where: { id: 1, userId: 1 },
-        data: { name: "Drinks" },
-      });
-      expect(result).toEqual(mockCategory);
+      const dbCategory = await prisma.category.findUnique({ where: { id: 1 } });
+      expect(dbCategory?.name).toBe("Drinks");
+      expect(result.name).toBe("Drinks");
     });
   });
 
   describe("delete", () => {
     it("should delete a category", async () => {
-      const mockCategory = { id: 1, name: "Groceries", userId: 1 };
-      (prisma.category.delete as Mock).mockResolvedValue(mockCategory);
+      await prisma.category.create({ data: { id: 1, name: "Groceries", userId: 1 } });
 
       const result = await categoryService.delete(1, 1);
 
-      expect(prisma.category.delete).toHaveBeenCalledWith({
-        where: { id: 1, userId: 1 },
-      });
-      expect(result).toEqual(mockCategory);
+      const dbCategory = await prisma.category.findUnique({ where: { id: 1 } });
+      expect(dbCategory).toBeNull();
+      expect(result.id).toBe(1);
     });
   });
 
   describe("predictCategory", () => {
     it("should return null if user has no categories", async () => {
-      (prisma.category.findMany as Mock).mockResolvedValue([]);
-
       const result = await categoryService.predictCategory(1, "Apple");
 
       expect(result).toEqual({ categoryName: null });
@@ -114,13 +87,13 @@ describe("CategoryService", () => {
 
     it("should throw if GEMINI_API_KEY is not configured", async () => {
       delete process.env.GEMINI_API_KEY;
-      (prisma.category.findMany as Mock).mockResolvedValue([{ id: 1, name: "Fruit", userId: 1 }]);
+      await prisma.category.create({ data: { id: 1, name: "Fruit", userId: 1 } });
 
       await expect(categoryService.predictCategory(1, "Apple")).rejects.toThrow("GEMINI_API_KEY is not configured.");
     });
 
     it("should return null if model predicts NONE", async () => {
-      (prisma.category.findMany as Mock).mockResolvedValue([{ id: 1, name: "Fruit", userId: 1 }]);
+      await prisma.category.create({ data: { id: 1, name: "Fruit", userId: 1 } });
       mockGenerateContent.mockResolvedValue({ text: JSON.stringify({ category: "NONE" }) });
 
       const result = await categoryService.predictCategory(1, "Car");
@@ -129,10 +102,8 @@ describe("CategoryService", () => {
     });
 
     it("should return category if model predicts existing category", async () => {
-      (prisma.category.findMany as Mock).mockResolvedValue([
-        { id: 1, name: "Fruit", userId: 1 },
-        { id: 2, name: "Groenten", userId: 1 },
-      ]);
+      await prisma.category.create({ data: { id: 1, name: "Fruit", userId: 1 } });
+      await prisma.category.create({ data: { id: 2, name: "Groenten", userId: 1 } });
       mockGenerateContent.mockResolvedValue({ text: JSON.stringify({ category: "Groenten" }) });
 
       const result = await categoryService.predictCategory(1, "Spinazie");
@@ -141,7 +112,7 @@ describe("CategoryService", () => {
     });
 
     it("should return null if model predicts a category that does not exist", async () => {
-      (prisma.category.findMany as Mock).mockResolvedValue([{ id: 1, name: "Fruit", userId: 1 }]);
+      await prisma.category.create({ data: { id: 1, name: "Fruit", userId: 1 } });
       mockGenerateContent.mockResolvedValue({ text: JSON.stringify({ category: "NONE" }) });
 
       const result = await categoryService.predictCategory(1, "Car");
