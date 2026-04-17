@@ -1,4 +1,5 @@
-import { type IListService } from "#/services/ListService.js";
+import { injectable } from "inversify";
+import { ListService } from "#/services/ListService.js";
 import { getAuthenticatedUserId } from "#/utils/auth.js";
 import { type Request as ExRequest } from "express";
 import { Body, Controller, Delete, Get, Path, Post, Request, Route, Security, Tags } from "tsoa";
@@ -30,8 +31,9 @@ interface ListResponse {
 @Route("lists")
 @Tags("List")
 @Security("session")
+@injectable()
 export class ListController extends Controller {
-  constructor(private listService: IListService) {
+  constructor(private listService: ListService) {
     super();
   }
 

@@ -1,9 +1,9 @@
-import todoMail from "#/mail/emails/todoMail.js";
+import { iocContainer } from "#/ioc.js";
+import { MailService } from "#/services/MailService.js";
 import prisma from "#/prisma.js";
+import { LoggingService } from "#/services/LoggingService.js";
 import dayjs from "dayjs";
 import cron from "node-cron";
-
-import { error as logError } from "#/utils/logging.js";
 
 /*
 /  Email schedule, elke dag om 18:00 uur e-mail over de todos van morgen.
@@ -30,7 +30,7 @@ cron.schedule("0 18 * * *", () => {
           return todo.enableDeadline && todoDate.isSame(tomorrow, "day");
         });
         if (!todos.length) continue;
-        await todoMail(
+        await iocContainer.get(MailService).sendTodoMail(
           todos,
           user,
           "Todo's voor morgen",
@@ -38,7 +38,7 @@ cron.schedule("0 18 * * *", () => {
         );
       }
     } catch (err) {
-      logError("Error in daily email cronjob: " + String(err));
+      iocContainer.get(LoggingService).error("Error in daily email cronjob: " + String(err));
     }
   })();
 });
@@ -68,7 +68,7 @@ cron.schedule("* * * * *", () => {
           return todo.enableDeadline && todoDate.isSame(now, "minute");
         });
         if (currentTodos.length) {
-          await todoMail(
+          await iocContainer.get(MailService).sendTodoMail(
             currentTodos,
             user,
             "U heeft een todo gepland",
@@ -82,7 +82,7 @@ cron.schedule("* * * * *", () => {
           return todo.enableDeadline && todoDate.diff(now, "minute") === 15;
         });
         if (quartreTodos.length) {
-          await todoMail(
+          await iocContainer.get(MailService).sendTodoMail(
             quartreTodos,
             user,
             "Todos over een kwartier",
@@ -91,7 +91,7 @@ cron.schedule("* * * * *", () => {
         }
       }
     } catch (err) {
-      logError("Error in minute check cronjob: " + String(err));
+      iocContainer.get(LoggingService).error("Error in minute check cronjob: " + String(err));
     }
   })();
 });

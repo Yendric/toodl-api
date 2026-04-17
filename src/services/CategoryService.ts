@@ -10,6 +10,9 @@ export interface ICategoryService {
   predictCategory(userId: number, itemName: string): Promise<{ categoryName: string | null }>;
 }
 
+import { injectable } from "inversify";
+
+@injectable()
 export class CategoryService implements ICategoryService {
   public async listForUser(userId: number): Promise<Category[]> {
     return await prisma.category.findMany({

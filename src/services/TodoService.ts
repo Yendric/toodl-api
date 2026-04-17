@@ -22,55 +22,58 @@ export interface ITodoService {
   delete(userId: number, todoId: number): Promise<Todo>;
 }
 
+import { injectable } from "inversify";
+
+@injectable()
 export class TodoService implements ITodoService {
   public async listForUser(userId: number, storeId?: number): Promise<Todo[]> {
+    let storeOrderMap: Map<number, number> | undefined;
+
+    if (storeId) {
+      const store = await prisma.store.findFirst({
+        where: { id: storeId, userId },
+        include: { categoryOrders: true },
+      });
+      if (!store) throw new DataValidationError("Winkel niet gevonden.");
+      storeOrderMap = new Map(store.categoryOrders.map((o) => [o.categoryId, o.position]));
+    }
+
     const todos = await prisma.todo.findMany({
       where: { userId },
       orderBy: [{ done: "asc" }, { position: "asc" }, { startTime: "asc" }],
     });
 
-    return this.applyStoreSorting(todos, storeId, userId);
+    return storeOrderMap ? this.sortTodosByStoreMap(todos, storeOrderMap) : todos;
   }
 
   public async listByList(userId: number, listId: number, storeId?: number): Promise<Todo[]> {
+    let storeOrderMap: Map<number, number> | undefined;
+
+    if (storeId) {
+      const store = await prisma.store.findFirst({
+        where: { id: storeId, userId },
+        include: { categoryOrders: true },
+      });
+      if (!store) throw new DataValidationError("Winkel niet gevonden.");
+      storeOrderMap = new Map(store.categoryOrders.map((o) => [o.categoryId, o.position]));
+    }
+
     const todos = await prisma.todo.findMany({
       where: { userId, listId },
       orderBy: [{ done: "asc" }, { position: "asc" }, { startTime: "asc" }],
     });
 
-    return this.applyStoreSorting(todos, storeId, userId);
+    return storeOrderMap ? this.sortTodosByStoreMap(todos, storeOrderMap) : todos;
   }
 
-  private async applyStoreSorting(todos: Todo[], storeId?: number, userId?: number): Promise<Todo[]> {
-    if (!storeId) {
-      return todos;
-    }
-
-    // Verify store ownership if userId is provided
-    if (userId) {
-      const store = await prisma.store.findFirst({
-        where: { id: storeId, userId },
-      });
-      if (!store) throw new DataValidationError("Winkel niet gevonden.");
-    }
-
-    const orders = await prisma.storeCategoryOrder.findMany({
-      where: { storeId },
-    });
-
-    const orderMap = new Map<number, number>(orders.map((o) => [o.categoryId, o.position]));
-
+  private sortTodosByStoreMap(todos: Todo[], orderMap: Map<number, number>): Todo[] {
     return todos.sort((a, b) => {
       if (a.done !== b.done) return a.done ? 1 : -1;
 
       const orderA = a.categoryId !== null ? (orderMap.get(a.categoryId) ?? Infinity) : Infinity;
       const orderB = b.categoryId !== null ? (orderMap.get(b.categoryId) ?? Infinity) : Infinity;
 
-      if (orderA !== orderB) {
-        if (orderA === Infinity) return 1;
-        if (orderB === Infinity) return -1;
-        return orderA - orderB;
-      }
+      if (orderA !== orderB) return orderA - orderB;
 
       return a.position.localeCompare(b.position);
     });
@@ -84,22 +87,20 @@ export class TodoService implements ITodoService {
     if (listId) {
       const list = await prisma.list.findFirst({
         where: { id: listId, userId },
+        select: { id: true, _count: { select: { todos: true } } },
       });
       if (!list) throw new DataValidationError("Lijst niet gevonden.");
 
-      const amount = await prisma.todo.count({
-        where: { listId },
-      });
-      if (amount >= 100) {
+      if (list._count.todos >= 100) {
         throw new DatabaseLimitError("Je kan maximaal 100 todos per lijst hebben.");
       }
     }
 
     if (categoryId) {
-      const category = await prisma.category.findFirst({
+      const categoryCount = await prisma.category.count({
         where: { id: categoryId, userId },
       });
-      if (!category) throw new DataValidationError("Categorie niet gevonden.");
+      if (categoryCount === 0) throw new DataValidationError("Categorie niet gevonden.");
     }
 
     let finalPosition = rest.position;
@@ -107,6 +108,7 @@ export class TodoService implements ITodoService {
       const lastTodo = await prisma.todo.findFirst({
         where: { userId, listId: listId || null },
         orderBy: { position: "desc" },
+        select: { position: true },
       });
       finalPosition = generateKeyBetween(lastTodo?.position || null, null);
     }
@@ -135,10 +137,10 @@ export class TodoService implements ITodoService {
       if (listId === null) {
         updateData.list = { disconnect: true };
       } else {
-        const list = await prisma.list.findFirst({
+        const listCount = await prisma.list.count({
           where: { id: listId, userId },
         });
-        if (!list) throw new DataValidationError("Lijst niet gevonden.");
+        if (listCount === 0) throw new DataValidationError("Lijst niet gevonden.");
         updateData.list = { connect: { id: listId } };
       }
     }
@@ -147,10 +149,10 @@ export class TodoService implements ITodoService {
       if (categoryId === null) {
         updateData.category = { disconnect: true };
       } else {
-        const category = await prisma.category.findFirst({
+        const categoryCount = await prisma.category.count({
           where: { id: categoryId, userId },
         });
-        if (!category) throw new DataValidationError("Categorie niet gevonden.");
+        if (categoryCount === 0) throw new DataValidationError("Categorie niet gevonden.");
         updateData.category = { connect: { id: categoryId } };
       }
     }

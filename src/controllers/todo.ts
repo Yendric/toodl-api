@@ -1,4 +1,5 @@
-import { type ITodoService } from "#/services/TodoService.js";
+import { injectable } from "inversify";
+import { TodoService } from "#/services/TodoService.js";
 import { getAuthenticatedUserId } from "#/utils/auth.js";
 import { type Request as ExRequest } from "express";
 import { Body, Controller, Delete, Get, Path, Post, Query, Request, Route, Security, Tags } from "tsoa";
@@ -71,8 +72,9 @@ interface TodoResponse {
 @Route("todos")
 @Tags("Todo")
 @Security("session")
+@injectable()
 export class TodoController extends Controller {
-  constructor(private todoService: ITodoService) {
+  constructor(private todoService: TodoService) {
     super();
   }
 

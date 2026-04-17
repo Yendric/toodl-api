@@ -15,6 +15,9 @@ export interface IStoreService {
   ): Promise<void>;
 }
 
+import { injectable } from "inversify";
+
+@injectable()
 export class StoreService implements IStoreService {
   public async listForUser(userId: number): Promise<Store[]> {
     return await prisma.store.findMany({

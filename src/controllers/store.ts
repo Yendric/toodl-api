@@ -1,4 +1,5 @@
-import { type IStoreService } from "#/services/StoreService.js";
+import { injectable } from "inversify";
+import { StoreService } from "#/services/StoreService.js";
 import { getAuthenticatedUserId } from "#/utils/auth.js";
 import { type Request as ExRequest } from "express";
 import { Body, Controller, Delete, Get, Path, Post, Request, Route, Security, Tags } from "tsoa";
@@ -33,8 +34,9 @@ interface StoreCategoryOrderResponse {
 @Route("stores")
 @Tags("Store")
 @Security("session")
+@injectable()
 export class StoreController extends Controller {
-  constructor(private storeService: IStoreService) {
+  constructor(private storeService: StoreService) {
     super();
   }
 

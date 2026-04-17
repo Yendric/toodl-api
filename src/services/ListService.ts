@@ -1,6 +1,6 @@
 import { DatabaseLimitError } from "#/errors/DatabaseLimitError.js";
-import prisma from "#/prisma.js";
 import { type List } from "#/generated/prisma/client.js";
+import prisma from "#/prisma.js";
 
 export interface IListService {
   listForUser(userId: number): Promise<List[]>;
@@ -9,6 +9,9 @@ export interface IListService {
   delete(userId: number, listId: number): Promise<List>;
 }
 
+import { injectable } from "inversify";
+
+@injectable()
 export class ListService implements IListService {
   public async listForUser(userId: number): Promise<List[]> {
     return await prisma.list.findMany({

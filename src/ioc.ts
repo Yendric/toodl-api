@@ -1,56 +1,36 @@
-import { Controller } from "tsoa";
+import "reflect-metadata";
+import { Container } from "inversify";
 import { AuthController } from "./controllers/auth.js";
 import { CategoryController } from "./controllers/category.js";
 import { ListController } from "./controllers/list.js";
 import { StoreController } from "./controllers/store.js";
 import { TodoController } from "./controllers/todo.js";
 import { UserController } from "./controllers/user.js";
-import { AuthService, type IAuthService } from "./services/AuthService.js";
-import { CategoryService, type ICategoryService } from "./services/CategoryService.js";
-import { ListService, type IListService } from "./services/ListService.js";
-import { StoreService, type IStoreService } from "./services/StoreService.js";
-import { TodoService, type ITodoService } from "./services/TodoService.js";
-import { UserService, type IUserService } from "./services/UserService.js";
+import { AuthService } from "./services/AuthService.js";
+import { CategoryService } from "./services/CategoryService.js";
+import { ListService } from "./services/ListService.js";
+import { LoggingService } from "./services/LoggingService.js";
+import { MailService } from "./services/MailService.js";
+import { StoreService } from "./services/StoreService.js";
+import { TodoService } from "./services/TodoService.js";
+import { UserService } from "./services/UserService.js";
 
-class IoCContainer {
-  private _userService: IUserService;
-  private _authService: IAuthService;
-  private _listService: IListService;
-  private _todoService: ITodoService;
-  private _categoryService: ICategoryService;
-  private _storeService: IStoreService;
+const iocContainer = new Container();
 
-  constructor() {
-    this._userService = new UserService();
-    this._authService = new AuthService(this._userService);
-    this._listService = new ListService();
-    this._todoService = new TodoService();
-    this._categoryService = new CategoryService();
-    this._storeService = new StoreService();
-  }
+iocContainer.bind<AuthController>(AuthController).toSelf();
+iocContainer.bind<CategoryController>(CategoryController).toSelf();
+iocContainer.bind<ListController>(ListController).toSelf();
+iocContainer.bind<StoreController>(StoreController).toSelf();
+iocContainer.bind<TodoController>(TodoController).toSelf();
+iocContainer.bind<UserController>(UserController).toSelf();
 
-  public get<T extends Controller>(controller: new (...args: unknown[]) => T): T {
-    if (controller === (AuthController as unknown)) {
-      return new AuthController(this._authService) as unknown as T;
-    }
-    if (controller === (CategoryController as unknown)) {
-      return new CategoryController(this._categoryService) as unknown as T;
-    }
-    if (controller === (ListController as unknown)) {
-      return new ListController(this._listService) as unknown as T;
-    }
-    if (controller === (StoreController as unknown)) {
-      return new StoreController(this._storeService) as unknown as T;
-    }
-    if (controller === (TodoController as unknown)) {
-      return new TodoController(this._todoService) as unknown as T;
-    }
-    if (controller === (UserController as unknown)) {
-      return new UserController(this._userService) as unknown as T;
-    }
+iocContainer.bind<AuthService>(AuthService).toSelf();
+iocContainer.bind<CategoryService>(CategoryService).toSelf();
+iocContainer.bind<ListService>(ListService).toSelf();
+iocContainer.bind<LoggingService>(LoggingService).toSelf().inSingletonScope();
+iocContainer.bind<MailService>(MailService).toSelf();
+iocContainer.bind<StoreService>(StoreService).toSelf();
+iocContainer.bind<TodoService>(TodoService).toSelf();
+iocContainer.bind<UserService>(UserService).toSelf();
 
-    return new (controller as new (...args: unknown[]) => T)();
-  }
-}
-
-export const iocContainer = new IoCContainer();
+export { iocContainer };

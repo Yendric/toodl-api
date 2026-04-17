@@ -1,5 +1,6 @@
+import { injectable } from "inversify";
 import { predictCategoryDailyLimiter, predictCategoryMinuteLimiter } from "#/middleware/rateLimiter.js";
-import { type ICategoryService } from "#/services/CategoryService.js";
+import { CategoryService } from "#/services/CategoryService.js";
 import { getAuthenticatedUserId } from "#/utils/auth.js";
 import { type Request as ExRequest } from "express";
 import { Body, Controller, Delete, Get, Middlewares, Path, Post, Request, Route, Security, Tags } from "tsoa";
@@ -35,8 +36,9 @@ interface CategoryResponse {
 @Route("categories")
 @Tags("Category")
 @Security("session")
+@injectable()
 export class CategoryController extends Controller {
-  constructor(private categoryService: ICategoryService) {
+  constructor(private categoryService: CategoryService) {
     super();
   }
 
