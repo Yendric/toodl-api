@@ -19,7 +19,7 @@ export class NotificationController extends Controller {
   }
 
   @Get("vapid-public-key")
-  public async getVapidPublicKey(): Promise<{ publicKey: string }> {
+  public getVapidPublicKey(): { publicKey: string } {
     return { publicKey: process.env.VAPID_PUBLIC_KEY || "" };
   }
 

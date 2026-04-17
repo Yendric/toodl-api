@@ -1,20 +1,27 @@
 import prisma from "#/prisma.js";
-import { type NotificationType, type PushPayload, type PushSubscriptionData } from "#/types/notifications.js";
-import webpush from "web-push";
-
-const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY!;
-const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY!;
-const VAPID_SUBJECT = process.env.VAPID_SUBJECT!;
-
-webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+import { type PushSubscriptionData } from "#/types/notifications.js";
+import { type Todo, type User } from "#/generated/prisma/client.js";
+import { MailProvider } from "#/providers/MailProvider.js";
+import { WebPushProvider } from "#/providers/WebPushProvider.js";
+import { inject, injectable } from "inversify";
+import { LoggingService } from "./LoggingService.js";
 
 export interface INotificationService {
   subscribe(userId: number, subscription: PushSubscriptionData): Promise<void>;
   unsubscribe(endpoint: string): Promise<void>;
-  sendPush(userId: number, payload: PushPayload, type: NotificationType): Promise<void>;
+  dispatchDaily(user: User, todos: Todo[]): Promise<void>;
+  dispatchReminder(user: User, todo: Todo): Promise<void>;
+  dispatchNow(user: User, todo: Todo): Promise<void>;
 }
 
+@injectable()
 export class NotificationService implements INotificationService {
+  constructor(
+    @inject(MailProvider) private mailProvider: MailProvider,
+    @inject(WebPushProvider) private webPushProvider: WebPushProvider,
+    @inject(LoggingService) private loggingService: LoggingService,
+  ) {}
+
   public async subscribe(userId: number, subscription: PushSubscriptionData): Promise<void> {
     const { endpoint, keys } = subscription;
     await prisma.pushSubscription.upsert({
@@ -38,50 +45,65 @@ export class NotificationService implements INotificationService {
       await prisma.pushSubscription.delete({
         where: { endpoint },
       });
-    } catch (e) {
+    } catch (_e) {
       // Ignore if it doesn't exist
     }
   }
 
-  public async sendPush(userId: number, payload: PushPayload, type: NotificationType): Promise<void> {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: { pushSubscriptions: true },
-    });
+  public async dispatchDaily(user: User, todos: Todo[]): Promise<void> {
+    const promises: Promise<void>[] = [];
+    if (user.dailyNotification) {
+      promises.push(this.mailProvider.sendDaily(user, todos));
+    }
+    if (user.dailyPush) {
+      promises.push(this.webPushProvider.sendDaily(user, todos));
+    }
 
-    if (!user) return;
-
-    // Check preferences
-    const isEnabled =
-      (type === "daily" && user.dailyPush) ||
-      (type === "reminder" && user.reminderPush) ||
-      (type === "now" && user.nowPush);
-
-    if (!isEnabled) return;
-
-    const payloadString = JSON.stringify(payload);
-
-    const pushPromises = user.pushSubscriptions.map(async (sub) => {
-      const pushSubscription = {
-        endpoint: sub.endpoint,
-        keys: {
-          p256dh: sub.p256dh,
-          auth: sub.auth,
-        },
-      };
-
-      try {
-        await webpush.sendNotification(pushSubscription, payloadString);
-      } catch (error: any) {
-        if (error.statusCode === 404 || error.statusCode === 410) {
-          console.log(`Pruning invalid subscription for user ${userId}: ${sub.endpoint}`);
-          await this.unsubscribe(sub.endpoint);
-        } else {
-          console.error(`Failed to send push to ${sub.endpoint}:`, error);
-        }
+    const results = await Promise.allSettled(promises);
+    results.forEach((result) => {
+      if (result.status === "rejected") {
+        this.loggingService.error(
+          `Provider failed to send daily notification to user ${user.id}: ${String(result.reason)}`,
+        );
       }
     });
+  }
 
-    await Promise.all(pushPromises);
+  public async dispatchReminder(user: User, todo: Todo): Promise<void> {
+    const promises: Promise<void>[] = [];
+    if (user.reminderNotification) {
+      promises.push(this.mailProvider.sendReminder(user, todo));
+    }
+    if (user.reminderPush) {
+      promises.push(this.webPushProvider.sendReminder(user, todo));
+    }
+
+    const results = await Promise.allSettled(promises);
+    results.forEach((result) => {
+      if (result.status === "rejected") {
+        this.loggingService.error(
+          `Provider failed to send reminder notification to user ${user.id}: ${String(result.reason)}`,
+        );
+      }
+    });
+  }
+
+  public async dispatchNow(user: User, todo: Todo): Promise<void> {
+    const promises: Promise<void>[] = [];
+    if (user.nowNotification) {
+      promises.push(this.mailProvider.sendNow(user, todo));
+    }
+    if (user.nowPush) {
+      promises.push(this.webPushProvider.sendNow(user, todo));
+    }
+
+    const results = await Promise.allSettled(promises);
+    results.forEach((result) => {
+      if (result.status === "rejected") {
+        this.loggingService.error(
+          `Provider failed to send now notification to user ${user.id}: ${String(result.reason)}`,
+        );
+      }
+    });
   }
 }

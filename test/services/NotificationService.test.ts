@@ -1,33 +1,36 @@
 import prisma from "#/prisma.js";
+import { MailProvider } from "#/providers/MailProvider.js";
+import { WebPushProvider } from "#/providers/WebPushProvider.js";
+import { LoggingService } from "#/services/LoggingService.js";
 import { NotificationService } from "#/services/NotificationService.js";
-import webpush from "web-push";
-import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
-
-vi.mock("web-push", () => ({
-  default: {
-    setVapidDetails: vi.fn(),
-    sendNotification: vi.fn(),
-  },
-}));
-
-vi.mock("#/prisma.js", () => ({
-  default: {
-    pushSubscription: {
-      upsert: vi.fn(),
-      delete: vi.fn(),
-    },
-    user: {
-      findUnique: vi.fn(),
-    },
-  },
-}));
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("NotificationService", () => {
   let notificationService: NotificationService;
+  let mockMailProvider: Partial<MailProvider>;
+  let mockWebPushProvider: Partial<WebPushProvider>;
+  let mockLoggingService: Partial<LoggingService>;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    notificationService = new NotificationService();
+    mockMailProvider = {
+      sendDaily: vi.fn().mockResolvedValue(undefined),
+      sendReminder: vi.fn().mockResolvedValue(undefined),
+      sendNow: vi.fn().mockResolvedValue(undefined),
+    };
+    mockWebPushProvider = {
+      sendDaily: vi.fn().mockResolvedValue(undefined),
+      sendReminder: vi.fn().mockResolvedValue(undefined),
+      sendNow: vi.fn().mockResolvedValue(undefined),
+    };
+    mockLoggingService = {
+      error: vi.fn(),
+    };
+    notificationService = new NotificationService(
+      mockMailProvider as MailProvider,
+      mockWebPushProvider as WebPushProvider,
+      mockLoggingService as LoggingService,
+    );
   });
 
   describe("subscribe", () => {
@@ -57,51 +60,37 @@ describe("NotificationService", () => {
     });
   });
 
-  describe("sendPush", () => {
-    it("should send push if enabled in preferences", async () => {
-      const userId = 1;
-      const user = {
-        id: userId,
-        dailyPush: true,
-        pushSubscriptions: [{ endpoint: "sub1", p256dh: "p1", auth: "a1" }],
-      };
-      (prisma.user.findUnique as Mock).mockResolvedValue(user);
-      (webpush.sendNotification as Mock).mockResolvedValue({});
+  describe("dispatchDaily", () => {
+    it("should dispatch to both providers if enabled", async () => {
+      const user = { dailyNotification: true, dailyPush: true } as any;
+      const todos = [] as any;
 
-      await notificationService.sendPush(userId, { title: "Test" }, "daily");
+      await notificationService.dispatchDaily(user, todos);
 
-      expect(webpush.sendNotification).toHaveBeenCalled();
+      expect(mockMailProvider.sendDaily).toHaveBeenCalledWith(user, todos);
+      expect(mockWebPushProvider.sendDaily).toHaveBeenCalledWith(user, todos);
     });
 
-    it("should not send push if disabled in preferences", async () => {
-      const userId = 1;
-      const user = {
-        id: userId,
-        dailyPush: false,
-        pushSubscriptions: [{ endpoint: "sub1", p256dh: "p1", auth: "a1" }],
-      };
-      (prisma.user.findUnique as Mock).mockResolvedValue(user);
+    it("should only dispatch mail if dailyPush is false", async () => {
+      const user = { dailyNotification: true, dailyPush: false } as any;
+      const todos = [] as any;
 
-      await notificationService.sendPush(userId, { title: "Test" }, "daily");
+      await notificationService.dispatchDaily(user, todos);
 
-      expect(webpush.sendNotification).not.toHaveBeenCalled();
+      expect(mockMailProvider.sendDaily).toHaveBeenCalledWith(user, todos);
+      expect(mockWebPushProvider.sendDaily).not.toHaveBeenCalled();
     });
 
-    it("should prune subscription if 404 or 410", async () => {
-      const userId = 1;
-      const user = {
-        id: userId,
-        dailyPush: true,
-        pushSubscriptions: [{ endpoint: "sub1", p256dh: "p1", auth: "a1" }],
-      };
-      (prisma.user.findUnique as Mock).mockResolvedValue(user);
-      (webpush.sendNotification as Mock).mockRejectedValue({ statusCode: 410 });
+    it("should log errors if a provider fails", async () => {
+      const user = { id: 1, dailyNotification: true, dailyPush: true } as any;
+      const todos = [] as any;
+      mockMailProvider.sendDaily = vi.fn().mockRejectedValue(new Error("Mail error"));
 
-      await notificationService.sendPush(userId, { title: "Test" }, "daily");
+      await notificationService.dispatchDaily(user, todos);
 
-      expect(prisma.pushSubscription.delete).toHaveBeenCalledWith({
-        where: { endpoint: "sub1" },
-      });
+      expect(mockLoggingService.error).toHaveBeenCalledWith(
+        expect.stringContaining("Provider failed to send daily notification to user 1: Error: Mail error"),
+      );
     });
   });
 });
