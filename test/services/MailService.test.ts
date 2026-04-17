@@ -52,20 +52,6 @@ describe("MailService", () => {
     expect(loggingService.success).toHaveBeenCalled();
   });
 
-  it("should send a todo email", async () => {
-    const user = { email: "test@example.com" };
-    const todos = [{ subject: "Task 1", startTime: new Date() }] as any;
-    await mailService.sendTodoMail(todos, user, "Body text", "Subject text");
-
-    expect(transporterMock.sendMail).toHaveBeenCalledWith(
-      expect.objectContaining({
-        to: user.email,
-        subject: expect.stringContaining("Subject text"),
-      }),
-    );
-    expect(loggingService.success).toHaveBeenCalled();
-  });
-
   it("should log an error if sending fails", async () => {
     transporterMock.sendMail.mockRejectedValueOnce(new Error("SMTP Error"));
     const user = { email: "test@example.com", username: "testuser" };

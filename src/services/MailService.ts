@@ -1,5 +1,3 @@
-import { type Todo } from "#/generated/prisma/client.js";
-import dayjs from "dayjs";
 import { inject, injectable } from "inversify";
 import nodemailer from "nodemailer";
 import type SMTPTransport from "nodemailer/lib/smtp-transport/index.js";
@@ -12,12 +10,6 @@ export interface IMailService {
   ): Promise<void>;
   sendRemovalMail(
     user: { email: string; username: string } & { [x: string | number | symbol]: unknown },
-  ): Promise<void>;
-  sendTodoMail(
-    todos: Todo[],
-    user: { email: string } & { [x: string | number | symbol]: unknown },
-    tekst: string,
-    onderwerp: string,
   ): Promise<void>;
 }
 
@@ -86,28 +78,5 @@ Het Toodl-team`,
     Met vriendelijke groeten,<br/>
     Het Toodl-team`,
     );
-  }
-
-  public async sendTodoMail(
-    todos: Todo[],
-    user: { email: string } & { [x: string | number | symbol]: unknown },
-    tekst: string,
-    onderwerp: string,
-  ) {
-    const todoHTML =
-      "<ul>" +
-      todos
-        .map(
-          (todo) =>
-            `<li>
-		${todo.subject}
-		 - 
-		${dayjs(todo.startTime).format("DD/MM/YYYY HH:mm")};
-		</li>`,
-        )
-        .join("") +
-      "</ul>";
-
-    await this.sendMail(user.email, tekst, onderwerp, todoHTML);
   }
 }
