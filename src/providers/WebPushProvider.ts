@@ -17,10 +17,15 @@ if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY && VAPID_SUBJECT) {
 export class WebPushProvider implements INotificationProvider {
   constructor(@inject(LoggingService) private loggingService: LoggingService) {}
 
-  private async sendPayloadToUser(user: User & { pushSubscriptions?: PushSubscription[] }, payload: PushPayload): Promise<void> {
-    const pushSubscriptions = user.pushSubscriptions || await prisma.pushSubscription.findMany({
-      where: { userId: user.id },
-    });
+  private async sendPayloadToUser(
+    user: User & { pushSubscriptions?: PushSubscription[] },
+    payload: PushPayload,
+  ): Promise<void> {
+    const pushSubscriptions =
+      user.pushSubscriptions ||
+      (await prisma.pushSubscription.findMany({
+        where: { userId: user.id },
+      }));
 
     if (!pushSubscriptions || pushSubscriptions.length === 0) return;
 
@@ -41,9 +46,11 @@ export class WebPushProvider implements INotificationProvider {
         const err = error as { statusCode?: number };
         if (err.statusCode === 404 || err.statusCode === 410) {
           this.loggingService.log(`Pruning invalid subscription for user ${user.id}: ${sub.endpoint}`);
-          await prisma.pushSubscription.delete({
-            where: { endpoint: sub.endpoint },
-          }).catch(() => {});
+          await prisma.pushSubscription
+            .delete({
+              where: { endpoint: sub.endpoint },
+            })
+            .catch(() => {});
         } else {
           this.loggingService.error(`Failed to send push to ${sub.endpoint}: ${String(error)}`);
           throw error;

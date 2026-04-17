@@ -92,7 +92,7 @@ export class CronService {
       });
 
       const promisesNow = usersNow.flatMap((user) =>
-        user.todos.map((todo) => this.notificationService.dispatchNow(user, todo))
+        user.todos.map((todo) => this.notificationService.dispatchNow(user, todo)),
       );
 
       const usersReminder = await prisma.user.findMany({
@@ -124,7 +124,7 @@ export class CronService {
       });
 
       const promisesReminder = usersReminder.flatMap((user) =>
-        user.todos.map((todo) => this.notificationService.dispatchReminder(user, todo))
+        user.todos.map((todo) => this.notificationService.dispatchReminder(user, todo)),
       );
 
       await Promise.allSettled([...promisesNow, ...promisesReminder]);
