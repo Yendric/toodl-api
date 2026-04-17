@@ -1,14 +1,17 @@
 import { DatabaseLimitError } from "#/errors/DatabaseLimitError.js";
+import { type List } from "#/generated/prisma/client.js";
 import prisma from "#/prisma.js";
-import { type List } from "@prisma/client";
 
 export interface IListService {
   listForUser(userId: number): Promise<List[]>;
-  create(userId: number, data: Pick<List, "name" | "color">): Promise<List>;
-  update(userId: number, listId: number, data: Partial<Pick<List, "name" | "color">>): Promise<List>;
+  create(userId: number, data: Pick<List, "name" | "color"> & { type?: List["type"] }): Promise<List>;
+  update(userId: number, listId: number, data: Partial<Pick<List, "name" | "color" | "type">>): Promise<List>;
   delete(userId: number, listId: number): Promise<List>;
 }
 
+import { injectable } from "inversify";
+
+@injectable()
 export class ListService implements IListService {
   public async listForUser(userId: number): Promise<List[]> {
     return await prisma.list.findMany({
@@ -17,7 +20,7 @@ export class ListService implements IListService {
     });
   }
 
-  public async create(userId: number, data: Pick<List, "name" | "color">): Promise<List> {
+  public async create(userId: number, data: Pick<List, "name" | "color"> & { type?: List["type"] }): Promise<List> {
     const amount = await prisma.list.count({
       where: { userId },
     });
@@ -33,7 +36,11 @@ export class ListService implements IListService {
     });
   }
 
-  public async update(userId: number, listId: number, data: Partial<Pick<List, "name" | "color">>): Promise<List> {
+  public async update(
+    userId: number,
+    listId: number,
+    data: Partial<Pick<List, "name" | "color" | "type">>,
+  ): Promise<List> {
     return await prisma.list.update({
       data,
       where: { id: listId, userId },

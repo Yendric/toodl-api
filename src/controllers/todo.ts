@@ -1,7 +1,8 @@
-import { type ITodoService } from "#/services/TodoService.js";
+import { injectable } from "inversify";
+import { TodoService } from "#/services/TodoService.js";
 import { getAuthenticatedUserId } from "#/utils/auth.js";
 import { type Request as ExRequest } from "express";
-import { Body, Controller, Delete, Get, Path, Post, Request, Route, Security, Tags } from "tsoa";
+import { Body, Controller, Delete, Get, Path, Post, Query, Request, Route, Security, Tags } from "tsoa";
 
 interface TodoCreateRequest {
   done?: boolean;
@@ -43,6 +44,7 @@ interface TodoCreateRequest {
    * @maxLength 255
    */
   position?: string;
+  categoryId?: number | null;
 }
 
 interface TodoResponse {
@@ -62,6 +64,7 @@ interface TodoResponse {
   done: boolean;
   listId: number | null;
   userId: number;
+  categoryId: number | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -69,15 +72,29 @@ interface TodoResponse {
 @Route("todos")
 @Tags("Todo")
 @Security("session")
+@injectable()
 export class TodoController extends Controller {
-  constructor(private todoService: ITodoService) {
+  constructor(private todoService: TodoService) {
     super();
   }
 
+  /**
+   * @deprecated Use /todos/list/{listId} instead
+   */
   @Get("/")
-  public async index(@Request() request: ExRequest): Promise<TodoResponse[]> {
+  public async index(@Request() request: ExRequest, @Query() storeId?: number): Promise<TodoResponse[]> {
     const userId = getAuthenticatedUserId(request);
-    return await this.todoService.listForUser(userId);
+    return await this.todoService.listForUser(userId, storeId);
+  }
+
+  @Get("list/{listId}")
+  public async getByList(
+    @Request() request: ExRequest,
+    @Path() listId: number,
+    @Query() storeId?: number,
+  ): Promise<TodoResponse[]> {
+    const userId = getAuthenticatedUserId(request);
+    return await this.todoService.listByList(userId, listId, storeId);
   }
 
   @Post("/")

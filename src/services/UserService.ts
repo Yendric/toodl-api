@@ -1,9 +1,10 @@
 import { ToodlError } from "#/errors/ToodlError.js";
-import removalMail from "#/mail/emails/removalMail.js";
+import { Prisma, type User } from "#/generated/prisma/client.js";
 import prisma from "#/prisma.js";
-import { Prisma, type User } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import dayjs from "dayjs";
+import { injectable } from "inversify";
+import { MailService } from "./MailService.js";
 
 export interface UserUpdateData {
   email?: string;
@@ -21,22 +22,87 @@ export interface PasswordUpdateData {
 }
 
 export interface IUserService {
+  getUserById(id: number): Promise<User | null>;
+  getUserByEmail(email: string): Promise<User | null>;
   createUserWithDefaults(data: Prisma.UserCreateInput): Promise<User>;
   update(userId: number, data: UserUpdateData): Promise<User>;
   delete(user: User): Promise<void>;
   updatePassword(user: User, data: PasswordUpdateData): Promise<void>;
 }
 
+@injectable()
 export class UserService implements IUserService {
+  constructor(private mailService: MailService) {}
+
+  public async getUserById(id: number): Promise<User | null> {
+    return await prisma.user.findUnique({
+      where: { id },
+    });
+  }
+
+  public async getUserByEmail(email: string): Promise<User | null> {
+    return await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+    });
+  }
+
   public async createUserWithDefaults(data: Prisma.UserCreateInput): Promise<User> {
     return await prisma.$transaction(async (tx) => {
       const user = await tx.user.create({ data });
+
+      // Create default categories
+      const categories = [
+        "Groenten & Fruit",
+        "Brood & Bakkerij",
+        "Vlees, Vis & Vegetarisch",
+        "Charcuterie & Kaas",
+        "Zuivel & Eieren",
+        "Kruidenierswaren & Conserven",
+        "Ontbijt & Beleg",
+        "Snoep, Koeken & Snacks",
+        "Diepvries",
+        "Dranken (Niet-alcoholisch)",
+        "Alcoholische Dranken",
+        "Verzorging & Gezondheid",
+        "Huishouden & Schoonmaak",
+        "Huisdieren",
+        "Baby",
+        "Wereldkeuken",
+      ];
+      const createdCategories = await Promise.all(
+        categories.map((name) =>
+          tx.category.create({
+            data: {
+              name,
+              userId: user.id,
+            },
+          }),
+        ),
+      );
+
+      // Create default store
+      const store = await tx.store.create({
+        data: {
+          name: "Supermarkt",
+          userId: user.id,
+        },
+      });
+
+      // Set default category order for the store
+      await tx.storeCategoryOrder.createMany({
+        data: createdCategories.map((category, index) => ({
+          storeId: store.id,
+          categoryId: category.id,
+          position: index,
+        })),
+      });
 
       const boodschappen = await tx.list.create({
         data: {
           userId: user.id,
           name: "Boodschappen",
           color: "#33AAFF",
+          type: "SHOPPING",
         },
       });
 
@@ -96,7 +162,7 @@ export class UserService implements IUserService {
 
   public async delete(user: User): Promise<void> {
     await prisma.user.delete({ where: { id: user.id } });
-    await removalMail(user);
+    await this.mailService.sendRemovalMail(user);
   }
 
   public async updatePassword(user: User, data: PasswordUpdateData): Promise<void> {

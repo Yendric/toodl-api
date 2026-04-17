@@ -1,5 +1,6 @@
-import { type IAuthService } from "#/services/AuthService.js";
-import { error } from "#/utils/logging.js";
+import { injectable } from "inversify";
+import { AuthService } from "#/services/AuthService.js";
+import { LoggingService } from "#/services/LoggingService.js";
 import { type Request as ExRequest } from "express";
 import { Body, Controller, Get, Post, Request, Res, Route, Tags, type TsoaResponse } from "tsoa";
 
@@ -46,8 +47,12 @@ interface AuthResponse {
 
 @Route("auth")
 @Tags("Auth")
+@injectable()
 export class AuthController extends Controller {
-  constructor(private authService: IAuthService) {
+  constructor(
+    private authService: AuthService,
+    private loggingService: LoggingService,
+  ) {
     super();
   }
 
@@ -78,7 +83,7 @@ export class AuthController extends Controller {
     return new Promise((resolve) => {
       request.session.destroy((err) => {
         if (err) {
-          error("Fout bij uitloggen: " + err);
+          this.loggingService.error("Fout bij uitloggen: " + err);
           errorRes(500, { message: "Er ging iets fout bij het uitloggen." });
           return resolve();
         }
