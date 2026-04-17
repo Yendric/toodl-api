@@ -24,7 +24,7 @@ describe("StoreService", () => {
   describe("create", () => {
     it("should create a store", async () => {
       const result = await storeService.create(1, { name: "Colruyt" });
-      
+
       expect(result.name).toBe("Colruyt");
       expect(result.userId).toBe(1);
 
@@ -35,10 +35,10 @@ describe("StoreService", () => {
 
   describe("update", () => {
     it("should update a store", async () => {
-      const store = await prisma.store.create({ data: { id: 1, name: "Aldi", userId: 1 } });
-      
+      await prisma.store.create({ data: { id: 1, name: "Aldi", userId: 1 } });
+
       const result = await storeService.update(1, 1, { name: "Delhaize" });
-      
+
       expect(result.name).toBe("Delhaize");
 
       const dbStore = await prisma.store.findUnique({ where: { id: 1 } });
@@ -49,9 +49,9 @@ describe("StoreService", () => {
   describe("delete", () => {
     it("should delete a store", async () => {
       await prisma.store.create({ data: { id: 1, name: "Aldi", userId: 1 } });
-      
+
       await storeService.delete(1, 1);
-      
+
       const dbStore = await prisma.store.findUnique({ where: { id: 1 } });
       expect(dbStore).toBeNull();
     });
@@ -63,7 +63,7 @@ describe("StoreService", () => {
       await prisma.storeCategoryOrder.create({ data: { storeId: 1, categoryId: 10, position: 0 } });
 
       const result = await storeService.getCategoryOrder(1, 1);
-      
+
       expect(result).toHaveLength(1);
       expect(result[0]?.categoryId).toBe(10);
     });

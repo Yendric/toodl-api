@@ -2,12 +2,17 @@ import { type Todo } from "#/generated/prisma/client.js";
 import dayjs from "dayjs";
 import { inject, injectable } from "inversify";
 import nodemailer from "nodemailer";
+import type SMTPTransport from "nodemailer/lib/smtp-transport/index.js";
 import { LoggingService } from "./LoggingService.js";
 import { emailTemplate } from "./mailTemplate.js";
 
 export interface IMailService {
-  sendWelcomeMail(user: { email: string; username: string } & { [x: string | number | symbol]: unknown }): Promise<void>;
-  sendRemovalMail(user: { email: string; username: string } & { [x: string | number | symbol]: unknown }): Promise<void>;
+  sendWelcomeMail(
+    user: { email: string; username: string } & { [x: string | number | symbol]: unknown },
+  ): Promise<void>;
+  sendRemovalMail(
+    user: { email: string; username: string } & { [x: string | number | symbol]: unknown },
+  ): Promise<void>;
   sendTodoMail(
     todos: Todo[],
     user: { email: string } & { [x: string | number | symbol]: unknown },
@@ -18,7 +23,7 @@ export interface IMailService {
 
 @injectable()
 export class MailService implements IMailService {
-  private transporter: nodemailer.Transporter;
+  private transporter: nodemailer.Transporter<SMTPTransport.SentMessageInfo, SMTPTransport.Options>;
 
   constructor(@inject(LoggingService) private loggingService: LoggingService) {
     this.transporter = nodemailer.createTransport({

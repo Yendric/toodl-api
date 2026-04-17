@@ -1,17 +1,16 @@
 import { ToodlError } from "#/errors/ToodlError.js";
-import { AuthService } from "#/services/AuthService.js";
-import { UserService } from "#/services/UserService.js";
-import { type User } from "#/generated/prisma/client.js";
-import bcrypt from "bcryptjs";
-import { type Mock, vi } from "vitest";
 import prisma from "#/prisma.js";
-import { MailService } from "#/services/MailService.js";
+import { AuthService } from "#/services/AuthService.js";
 import { LoggingService } from "#/services/LoggingService.js";
+import { MailService } from "#/services/MailService.js";
+import { UserService } from "#/services/UserService.js";
+import bcrypt from "bcryptjs";
+import { vi } from "vitest";
 
 vi.mock("google-auth-library", () => {
   return {
     OAuth2Client: class {
-      verifyIdToken = vi.fn().mockImplementation(async ({ idToken }) => {
+      verifyIdToken = vi.fn().mockImplementation(({ idToken }) => {
         if (idToken === "valid-token-new") {
           return { getPayload: () => ({ email: "new@google.com", name: "New Google User" }) };
         } else if (idToken === "valid-token-existing") {
@@ -20,7 +19,7 @@ vi.mock("google-auth-library", () => {
           return { getPayload: () => null };
         }
       });
-    }
+    },
   };
 });
 
@@ -42,10 +41,10 @@ describe("AuthService", () => {
     it("should register a new user", async () => {
       const userData = { username: "testuser", email: "test@example.com", password: "password123" };
 
-      const result = await authService.register(userData.username, userData.email, userData.password);
+      await authService.register(userData.username, userData.email, userData.password);
 
       expect(mailService.sendWelcomeMail).toHaveBeenCalled();
-      
+
       const savedUser = await prisma.user.findUnique({ where: { email: userData.email } });
       expect(savedUser).toBeDefined();
       expect(savedUser?.username).toBe(userData.username);
@@ -62,7 +61,9 @@ describe("AuthService", () => {
   describe("login", () => {
     it("should login with correct credentials", async () => {
       const hashedPassword = await bcrypt.hash("password123", 10);
-      const user = await prisma.user.create({ data: { username: "loginuser", email: "testlogin@example.com", password: hashedPassword } });
+      const user = await prisma.user.create({
+        data: { username: "loginuser", email: "testlogin@example.com", password: hashedPassword },
+      });
 
       const result = await authService.login("testlogin@example.com", "password123");
 
@@ -71,7 +72,9 @@ describe("AuthService", () => {
 
     it("should throw error with incorrect password", async () => {
       const hashedPassword = await bcrypt.hash("realpassword", 10);
-      await prisma.user.create({ data: { username: "loginuser", email: "testlogin2@example.com", password: hashedPassword } });
+      await prisma.user.create({
+        data: { username: "loginuser", email: "testlogin2@example.com", password: hashedPassword },
+      });
 
       await expect(authService.login("testlogin2@example.com", "wrongpassword")).rejects.toThrow(ToodlError);
     });
@@ -89,7 +92,7 @@ describe("AuthService", () => {
 
     it("should login user if google user already exists", async () => {
       await prisma.user.create({ data: { username: "Existing User", email: "existing@google.com" } });
-      
+
       const user = await authService.google("valid-token-existing");
       expect(user.email).toBe("existing@google.com");
     });
