@@ -1,9 +1,11 @@
-import { getUserById } from "#/utils/database.js";
+import { iocContainer } from "#/ioc.js";
+import { UserService } from "#/services/UserService.js";
 import type { NextFunction, Request, Response } from "express";
 
 async function isLoggedIn(req: Request, res: Response, next: NextFunction) {
   if (req.session?.loggedIn && req.session.userId) {
-    const user = await getUserById(req.session.userId);
+    const userService = iocContainer.get(UserService);
+    const user = await userService.getUserById(req.session.userId);
 
     if (!user) {
       // Gebruiker bestaat niet meer, uitloggen

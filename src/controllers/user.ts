@@ -1,4 +1,5 @@
-import { type IUserService } from "#/services/UserService.js";
+import { injectable } from "inversify";
+import { UserService } from "#/services/UserService.js";
 import { getAuthenticatedUser, getAuthenticatedUserId } from "#/utils/auth.js";
 import { type Request as ExRequest } from "express";
 import { Body, Controller, Get, Post, Request, Res, Route, Security, Tags, type TsoaResponse } from "tsoa";
@@ -65,8 +66,9 @@ interface MessageResponse {
 @Route("auth/user_data")
 @Tags("User")
 @Security("session")
+@injectable()
 export class UserController extends Controller {
-  constructor(private userService: IUserService) {
+  constructor(private userService: UserService) {
     super();
   }
 

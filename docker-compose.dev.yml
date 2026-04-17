@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   toodl_api:
     container_name: toodl_api

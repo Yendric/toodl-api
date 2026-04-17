@@ -1,13 +1,9 @@
-import todoMail from "#/mail/emails/todoMail.js";
+import { iocContainer } from "#/ioc.js";
 import prisma from "#/prisma.js";
-import { NotificationService } from "#/services/NotificationService.js";
+import { LoggingService } from "#/services/LoggingService.js";
+import { MailService } from "#/services/MailService.js";
 import dayjs from "dayjs";
 import cron from "node-cron";
-
-import { error as logError } from "#/utils/logging.js";
-
-const notificationService = new NotificationService();
-const APP_URI = process.env.APP_URI || "http://localhost:3000";
 
 /*
 /  Email schedule, elke dag om 18:00 uur e-mail over de todos van morgen.
@@ -36,26 +32,17 @@ cron.schedule("0 18 * * *", () => {
           return todo.enableDeadline && todoDate.isSame(tomorrow, "day");
         });
         if (!todos.length) continue;
-        await todoMail(
-          todos,
-          user,
-          "Todo's voor morgen",
-          "morgen heeft u de volgende todo's gepland, vergeet ze niet:",
-        );
-
-        // Push notification
-        await notificationService.sendPush(
-          user.id,
-          {
-            title: "Todo's voor morgen",
-            body: `Je hebt ${todos.length} todo's gepland voor morgen.`,
-            data: { url: `${APP_URI}/` },
-          },
-          "daily",
-        );
+        await iocContainer
+          .get(MailService)
+          .sendTodoMail(
+            todos,
+            user,
+            "Todo's voor morgen",
+            "morgen heeft u de volgende todo's gepland, vergeet ze niet:",
+          );
       }
     } catch (err) {
-      logError("Error in daily email cronjob: " + String(err));
+      iocContainer.get(LoggingService).error("Error in daily email cronjob: " + String(err));
     }
   })();
 });
@@ -88,25 +75,14 @@ cron.schedule("* * * * *", () => {
           return todo.enableDeadline && todoDate.isSame(now, "minute");
         });
         if (currentTodos.length) {
-          await todoMail(
-            currentTodos,
-            user,
-            "U heeft een todo gepland",
-            "op dit moment heeft u de volgende todo('s) gepland, vergeet ze niet:",
-          );
-
-          // Push notification for "now"
-          for (const todo of currentTodos) {
-            await notificationService.sendPush(
-              user.id,
-              {
-                title: "Nu gepland",
-                body: todo.subject,
-                data: { url: `${APP_URI}/todo/${todo.id}` },
-              },
-              "now",
+          await iocContainer
+            .get(MailService)
+            .sendTodoMail(
+              currentTodos,
+              user,
+              "U heeft een todo gepland",
+              "op dit moment heeft u de volgende todo('s) gepland, vergeet ze niet:",
             );
-          }
         }
 
         const quartreTodos = user.todos.filter((todo) => {
@@ -115,29 +91,18 @@ cron.schedule("* * * * *", () => {
           return todo.enableDeadline && todoDate.diff(now, "minute") === 15;
         });
         if (quartreTodos.length) {
-          await todoMail(
-            quartreTodos,
-            user,
-            "Todos over een kwartier",
-            "over een kwartier heeft u de volgende todo('s) gepland, vergeet ze niet:",
-          );
-
-          // Push notification for reminders
-          for (const todo of quartreTodos) {
-            await notificationService.sendPush(
-              user.id,
-              {
-                title: "Over 15 minuten",
-                body: todo.subject,
-                data: { url: `${APP_URI}/todo/${todo.id}` },
-              },
-              "reminder",
+          await iocContainer
+            .get(MailService)
+            .sendTodoMail(
+              quartreTodos,
+              user,
+              "Todos over een kwartier",
+              "over een kwartier heeft u de volgende todo('s) gepland, vergeet ze niet:",
             );
-          }
         }
       }
     } catch (err) {
-      logError("Error in minute check cronjob: " + String(err));
+      iocContainer.get(LoggingService).error("Error in minute check cronjob: " + String(err));
     }
   })();
 });

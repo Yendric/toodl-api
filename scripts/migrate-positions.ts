@@ -1,42 +1,46 @@
-import { PrismaClient } from "@prisma/client";
+import prisma from "#/prisma.js";
 import { generateKeyBetween } from "fractional-indexing";
-
-const prisma = new PrismaClient();
 
 async function main() {
   console.log("Starting position migration...");
 
-  // Get all unique users and lists
-  const todos = await prisma.todo.findMany({
-    select: { id: true, userId: true, listId: true },
-    orderBy: [{ done: "asc" }, { startTime: "asc" }, { id: "asc" }],
+  const users = await prisma.user.findMany({
+    select: { id: true },
   });
 
-  const groups: Record<string, number[]> = {};
+  for (const user of users) {
+    const lists = await prisma.list.findMany({
+      where: { userId: user.id },
+      select: { id: true },
+    });
 
-  for (const todo of todos) {
-    const key = `${todo.userId}-${todo.listId || "inbox"}`;
-    if (!groups[key]) {
-      groups[key] = [];
-    }
-    groups[key].push(todo.id);
-  }
+    // Also migrate todos without a list
+    const listIds: (number | null)[] = [...lists.map((l) => l.id), null];
 
-  let totalUpdated = 0;
-
-  for (const [, todoIds] of Object.entries(groups)) {
-    let currentPosition: string | null = null;
-    for (const todoId of todoIds) {
-      currentPosition = generateKeyBetween(currentPosition, null);
-      await prisma.todo.update({
-        where: { id: todoId },
-        data: { position: currentPosition },
+    for (const listId of listIds) {
+      const todos = await prisma.todo.findMany({
+        where: { userId: user.id, listId },
+        orderBy: { createdAt: "asc" },
       });
-      totalUpdated++;
+
+      let lastPosition: string | null = null;
+
+      for (const todo of todos) {
+        if (!todo.position) {
+          const newPosition = generateKeyBetween(lastPosition, null);
+          await prisma.todo.update({
+            where: { id: todo.id },
+            data: { position: newPosition },
+          });
+          lastPosition = newPosition;
+        } else {
+          lastPosition = todo.position;
+        }
+      }
     }
   }
 
-  console.log(`Successfully updated positions for ${totalUpdated} todos.`);
+  console.log("Position migration completed.");
 }
 
 main()
