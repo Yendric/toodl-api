@@ -17,7 +17,7 @@ FROM base AS prod-deps
 COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
 COPY prisma ./prisma
-RUN pnpm dlx prisma generate
+RUN pnpm dlx prisma generate --generator client
 
 FROM base AS development
 ENV NODE_ENV=development
