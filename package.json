@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "pnpm tsoa:gen && tsc",
-    "serve": "pnpm dlx prisma migrate deploy && node ./dist/server.js",
+    "serve": "pnpm dlx prisma migrate deploy && node ./dist/src/server.js",
     "dev": "pnpm tsoa:gen && DEBUG=true node --watch --import @swc-node/register/esm-register ./src/server.ts",
     "lint": "pnpm tsoa:gen && eslint .",
     "format:check": "prettier --check .",
