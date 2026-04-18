@@ -58,6 +58,6 @@ describe("MailService", () => {
 
     await mailService.sendWelcomeMail(user);
 
-    expect(loggingService.error).toHaveBeenCalledWith(expect.stringContaining("Fout"));
+    expect(loggingService.error).toHaveBeenCalledWith(expect.stringContaining("Error"));
   });
 });
