@@ -11,7 +11,9 @@ export interface ILoggingService {
 @injectable()
 export class LoggingService implements ILoggingService {
   public log(message: string): void {
-    console.info(colors.dim(`[${new Date().toLocaleTimeString(undefined, { hour12: false })}] `) + colors.white(message));
+    console.info(
+      colors.dim(`[${new Date().toLocaleTimeString(undefined, { hour12: false })}] `) + colors.white(message),
+    );
   }
 
   public announce(message: string): void {

@@ -131,7 +131,9 @@ export class CronService {
       );
 
       await Promise.allSettled([...promisesNow, ...promisesReminder]);
-      this.loggingService.success(`Minute check cronjob finished. Dispatched ${promisesNow.length} immediate notifications and ${promisesReminder.length} reminders.`);
+      this.loggingService.success(
+        `Minute check cronjob finished. Dispatched ${promisesNow.length} immediate notifications and ${promisesReminder.length} reminders.`,
+      );
     } catch (err) {
       this.loggingService.error("Error in minute check cronjob: " + String(err));
     }
