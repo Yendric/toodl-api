@@ -17,6 +17,7 @@ import swaggerDocument from "./swagger.json" with { type: "json" };
 const API_VERSION = "v1";
 
 const app = express();
+app.set("trust proxy", 1);
 
 const swaggerOptions = {
   ...swaggerDocument,
