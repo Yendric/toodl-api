@@ -37,9 +37,9 @@ export class MailService implements IMailService {
         text: "Dit bericht bevat info over todos, bekijk de HTML versie voor meer info.",
         html: emailTemplate.replaceAll("{onderwerp}", onderwerp).replace("{text}", tekst).replace("{html}", html),
       });
-      this.loggingService.success("Email verzonden: " + info.response);
+      this.loggingService.success("Email sent: " + info.response);
     } catch (err) {
-      this.loggingService.error("Fout bij het versturen van e-mail: " + String(err));
+      this.loggingService.error("Error sending email: " + String(err));
     }
   }
 

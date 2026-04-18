@@ -1,8 +1,8 @@
-import prisma from "#/prisma.js";
-import { type PushSubscriptionData } from "#/types/notifications.js";
 import { type Todo, type User } from "#/generated/prisma/client.js";
+import prisma from "#/prisma.js";
 import { MailProvider } from "#/providers/MailProvider.js";
 import { WebPushProvider } from "#/providers/WebPushProvider.js";
+import { type PushSubscriptionData } from "#/types/notifications.js";
 import { inject, injectable } from "inversify";
 import { LoggingService } from "./LoggingService.js";
 

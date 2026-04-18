@@ -1,6 +1,7 @@
-import { type INotificationService } from "#/services/NotificationService.js";
+import { NotificationService } from "#/services/NotificationService.js";
 import { getAuthenticatedUserId } from "#/utils/auth.js";
 import { type Request as ExRequest } from "express";
+import { injectable } from "inversify";
 import { Body, Controller, Get, Post, Request, Route, Security, Tags } from "tsoa";
 
 export interface PushSubscriptionData {
@@ -13,8 +14,9 @@ export interface PushSubscriptionData {
 
 @Route("notifications")
 @Tags("Notification")
+@injectable()
 export class NotificationController extends Controller {
-  constructor(private notificationService: INotificationService) {
+  constructor(private notificationService: NotificationService) {
     super();
   }
 

@@ -3,6 +3,7 @@ import "reflect-metadata";
 import { AuthController } from "./controllers/auth.js";
 import { CategoryController } from "./controllers/category.js";
 import { ListController } from "./controllers/list.js";
+import { NotificationController } from "./controllers/notification.js";
 import { StoreController } from "./controllers/store.js";
 import { TodoController } from "./controllers/todo.js";
 import { UserController } from "./controllers/user.js";
@@ -27,6 +28,7 @@ iocContainer.bind<ListController>(ListController).toSelf();
 iocContainer.bind<StoreController>(StoreController).toSelf();
 iocContainer.bind<TodoController>(TodoController).toSelf();
 iocContainer.bind<UserController>(UserController).toSelf();
+iocContainer.bind<NotificationController>(NotificationController).toSelf();
 
 iocContainer.bind<MailProvider>(MailProvider).toSelf();
 iocContainer.bind<WebPushProvider>(WebPushProvider).toSelf();

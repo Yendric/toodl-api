@@ -12,6 +12,7 @@ export class CronService {
   ) {}
 
   public async processDailyNotifications(): Promise<void> {
+    this.loggingService.log("Starting daily notification cronjob...");
     try {
       const tomorrowStart = dayjs().add(1, "days").startOf("day").toDate();
       const tomorrowEnd = dayjs().add(1, "days").endOf("day").toDate();
@@ -50,12 +51,14 @@ export class CronService {
       });
 
       await Promise.allSettled(promises);
+      this.loggingService.success(`Daily notification cronjob finished. Processed ${promises.length} users.`);
     } catch (err) {
       this.loggingService.error("Error in daily notification cronjob: " + String(err));
     }
   }
 
   public async processMinuteNotifications(): Promise<void> {
+    this.loggingService.log("Starting minute check cronjob...");
     try {
       const nowStart = dayjs().startOf("minute").toDate();
       const nowEnd = dayjs().endOf("minute").toDate();
@@ -128,6 +131,7 @@ export class CronService {
       );
 
       await Promise.allSettled([...promisesNow, ...promisesReminder]);
+      this.loggingService.success(`Minute check cronjob finished. Dispatched ${promisesNow.length} immediate notifications and ${promisesReminder.length} reminders.`);
     } catch (err) {
       this.loggingService.error("Error in minute check cronjob: " + String(err));
     }

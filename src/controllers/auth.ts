@@ -83,7 +83,7 @@ export class AuthController extends Controller {
     return new Promise((resolve) => {
       request.session.destroy((err) => {
         if (err) {
-          this.loggingService.error("Fout bij uitloggen: " + err);
+          this.loggingService.error("Error during logout: " + err);
           errorRes(500, { message: "Er ging iets fout bij het uitloggen." });
           return resolve();
         }

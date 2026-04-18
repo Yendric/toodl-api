@@ -1,9 +1,9 @@
+import { type PushSubscription, type Todo, type User } from "#/generated/prisma/client.js";
 import prisma from "#/prisma.js";
-import { type PushPayload, type INotificationProvider } from "#/types/notifications.js";
-import { type Todo, type User, type PushSubscription } from "#/generated/prisma/client.js";
+import { LoggingService } from "#/services/LoggingService.js";
+import { type INotificationProvider, type PushPayload } from "#/types/notifications.js";
 import { inject, injectable } from "inversify";
 import webpush from "web-push";
-import { LoggingService } from "#/services/LoggingService.js";
 
 const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY!;
 const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY!;
@@ -42,6 +42,7 @@ export class WebPushProvider implements INotificationProvider {
 
       try {
         await webpush.sendNotification(pushSubscription, payloadString);
+        this.loggingService.log(`Webpush notification sent to user ${user.id}: ${sub.endpoint}`);
       } catch (error: unknown) {
         const err = error as { statusCode?: number };
         if (err.statusCode === 404 || err.statusCode === 410) {

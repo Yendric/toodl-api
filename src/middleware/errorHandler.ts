@@ -18,7 +18,7 @@ function handleError(err: unknown, req: Request, res: Response, _next: NextFunct
   } else {
     const logger = iocContainer.get(LoggingService);
     logger.error(`Unhandled error: ${err instanceof Error ? err.stack : String(err)}`);
-    return res.status(500).json({ message: "Er is iets foutgegaan." });
+    return res.status(500).json({ message: "Something went wrong." });
   }
 }
 

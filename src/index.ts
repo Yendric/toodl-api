@@ -4,6 +4,7 @@ import { expand } from "dotenv-expand";
 expand(config());
 
 import handleError from "#/middleware/errorHandler.js";
+import { requestLogger } from "#/middleware/requestLogger.js";
 import { RegisterRoutes } from "#/routes.js";
 import cors from "cors";
 import express from "express";
@@ -37,6 +38,7 @@ app.use(helmet());
 app.use(cors({ origin: process.env.APP_URI?.split(","), credentials: true }));
 app.use(express.json());
 app.use(sessionMiddleware);
+app.use(requestLogger);
 
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerOptions));
 

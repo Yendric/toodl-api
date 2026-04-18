@@ -11,6 +11,6 @@ if (process.env.NODE_ENV !== "test") {
   server.listen(port, () => {
     iocContainer
       .get(LoggingService)
-      .announce(`App is online op poort ${port}. Bezoek ${process.env.CALLBACK_URI} in je browser.`);
+      .announce(`App is online on port ${port}. Visit ${process.env.CALLBACK_URI} in your browser.`);
   });
 }
