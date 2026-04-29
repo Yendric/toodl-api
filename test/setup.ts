@@ -3,6 +3,8 @@ import createPrismaMock from "prisma-mock/client";
 import { beforeEach, vi } from "vitest";
 import { mockDeep, mockReset } from "vitest-mock-extended";
 
+process.env.RESEND_API_KEY = "re_test_123";
+
 vi.mock("#/prisma.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("#/prisma.js")>();
   return {

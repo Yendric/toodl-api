@@ -4,34 +4,33 @@ import { emailTemplate } from "#/services/mailTemplate.js";
 import type { INotificationProvider } from "#/types/notifications.js";
 import dayjs from "dayjs";
 import { inject, injectable } from "inversify";
-import nodemailer from "nodemailer";
-import type SMTPTransport from "nodemailer/lib/smtp-transport/index.js";
+import { Resend } from "resend";
 
 @injectable()
 export class MailProvider implements INotificationProvider {
-  private transporter: nodemailer.Transporter<SMTPTransport.SentMessageInfo, SMTPTransport.Options>;
+  private resend: Resend;
 
   constructor(@inject(LoggingService) private loggingService: LoggingService) {
-    this.transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.GMAIL_EMAIL,
-        pass: process.env.GMAIL_PASSWORD,
-      },
-    });
+    this.resend = new Resend(process.env.RESEND_API_KEY);
   }
 
   private async sendMail(to: string, tekst: string, onderwerp: string, html: string) {
     try {
-      const info = await this.transporter.sendMail({
-        from: "Toodl Notificaties <toodl@yendric.be>",
-        replyTo: "Toodl Notificaties <toodl@yendric.be>",
+      const { data, error } = await this.resend.emails.send({
+        from: process.env.EMAIL_FROM || "Toodl Notificaties <toodl@example.com>",
+        replyTo: process.env.EMAIL_REPLY_TO || "toodl@example.com",
         to,
         subject: "Toodl - " + onderwerp,
         text: "Dit bericht bevat info over todos, bekijk de HTML versie voor meer info.",
         html: emailTemplate.replaceAll("{onderwerp}", onderwerp).replace("{text}", tekst).replace("{html}", html),
       });
-      this.loggingService.success("Email sent: " + info.response);
+
+      if (error) {
+        this.loggingService.error("Error sending email: " + error.message);
+        throw new Error(error.message);
+      }
+
+      this.loggingService.success("Email sent: " + data?.id);
     } catch (err) {
       this.loggingService.error("Error sending email: " + String(err));
       throw err;
