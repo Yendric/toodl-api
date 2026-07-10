@@ -18,6 +18,7 @@ const API_VERSION = "v1";
 
 const app = express();
 app.set("trust proxy", 1);
+app.set("etag", false);
 
 const swaggerOptions = {
   ...swaggerDocument,
@@ -36,6 +37,10 @@ const sessionMiddleware = session({
 });
 
 app.use(helmet());
+app.use((_req, res, next) => {
+  res.set("Cache-Control", "no-store");
+  next();
+});
 app.use(cors({ origin: process.env.APP_URI?.split(","), credentials: true }));
 app.use(express.json());
 app.use(sessionMiddleware);
